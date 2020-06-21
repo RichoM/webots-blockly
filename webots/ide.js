@@ -20,7 +20,17 @@
         .then(initializeBlocksPanel)
         .then(initializeCodePanel)
         .then(initializeOutputPanel)
-        .then(initializeInternationalization);
+        .then(initializeInternationalization)
+        .then(() => {
+          setInterval(function () {
+            let msg = (+new Date()) +  " RICHO CAPO!";
+            appendToOutput({type: "info", text: msg});
+            appendToOutput({type: "success", text: msg});
+            appendToOutput({type: "error", text: msg});
+            appendToOutput({type: "warning", text: msg});
+            appendToOutput({type: "info", text: ""});
+          }, 500);
+        });
     },
   };
 
@@ -81,8 +91,8 @@
 
   function initializeCodePanel() {
 		codeEditor = ace.edit("code-editor");
-		codeEditor.setTheme("ace/theme/ambiance");
-		codeEditor.getSession().setMode("ace/mode/uzi");
+		codeEditor.setTheme("ace/theme/chrome");
+		codeEditor.getSession().setMode("ace/mode/python");
     codeEditor.setReadOnly(true); // TODO(Richo): Only for now...
   }
 
@@ -158,7 +168,7 @@
 
     // Append element
     let css = {
-      info: "text-white",
+      info: "text-dark",
       success: "text-success",
       error: "text-danger",
       warning: "text-warning"
