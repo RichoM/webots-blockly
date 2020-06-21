@@ -1,5 +1,7 @@
 # webots-blockly
 
+Go to: https://richom.github.io/webots-blockly/webots/
+
 To start the server run:
 
 $ npm start
