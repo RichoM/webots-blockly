@@ -1,6 +1,6 @@
 # webots-blockly
 
-Go to: https://richom.github.io/webots-blockly/webots/
+Go to: https://richom.github.io/webots-blockly/editor/
 
 To start the server run:
 
