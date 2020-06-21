@@ -20,6 +20,7 @@
         .then(initializeBlocksPanel)
         .then(initializeBlocklyVariablesModal)
         .then(initializeCodePanel)
+        .then(initializeAutorun)
         .then(initializeOutputPanel)
         .then(initializeInternationalization)
         .then(() => {
@@ -382,7 +383,6 @@
   }
 
 	function autorun() {
-    if (Uzi.state == undefined) return;
 		if (autorunNextTime === undefined) return;
 
 		let currentTime = +new Date();
@@ -393,7 +393,10 @@
 		if (currentProgram === lastProgram) return;
     lastProgram = currentProgram;
 
-    // TODO(Richo): Update code panel
+    let src = currentProgram;
+    if (codeEditor.getValue() !== src) {
+      codeEditor.setValue(src, 1);
+    }
 	}
 
   function getGeneratedCodeAsJSON() { // TODO(RIcho): Return python?
