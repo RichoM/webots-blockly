@@ -1,0 +1,25 @@
+{
+  "name": "webots-blockly",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {},
+  "devDependencies": {
+    "node-static": "^0.7.11"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RichoM/webots-blockly.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RichoM/webots-blockly/issues"
+  },
+  "homepage": "https://github.com/RichoM/webots-blockly#readme"
+}
