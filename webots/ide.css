@@ -1,0 +1,117 @@
+  #spinner-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999999;
+  }
+
+  h1, h2 {
+    font-family: 'ChargerRegular';
+    font-weight: normal;
+    font-style: normal;
+    padding: 5px 5px;
+  }
+
+  #container {
+    overflow: hidden;
+  }
+
+  #top-bar {
+    padding: 5px 10px;
+    transform: scale(0.85);
+    transform-origin: 0 0;
+    width: 117%;
+  }
+
+  #inspector-panel {
+    padding: 10px;
+
+    transform: scale(0.85);
+    transform-origin: 0 0;
+    width: 117%;
+  }
+
+  html, body, .fullscreen {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .dark-theme {
+    background: rgb(0,0,0);
+    background: linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(35,35,35,1) 30%, rgba(35,35,35,1) 100%);
+    color: white;
+  }
+
+  h2 span {
+    padding-right: 10px;
+  }
+
+  body .lm_content{
+    overflow: auto !important;
+  }
+
+  .scrollable {
+    overflow: scroll !important;
+  }
+
+  #inspector-panel .card {
+    border-radius: 0;
+    border: none;
+  }
+
+  #inspector-panel .card table {
+    margin-bottom: 0;
+  }
+
+  #code-editor {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    font-size: 13px;
+  }
+
+  #blocks-editor {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  #blockly {
+    color: black;
+  }
+
+  .blocklySvg {
+    background-color: #444 !important;
+  }
+
+  .blocklyWidgetDiv {
+
+  }
+
+
+  .blocklyToolboxDiv {
+
+  }
+
+  .blocklyFlyout {
+
+  }
+
+  .blocklyFlyoutBackground {
+
+  }
+
+  #output-panel pre {
+    overflow: visible;
+  }
+
+  .allCapsMode {
+    font-variant: small-caps;
+  }
