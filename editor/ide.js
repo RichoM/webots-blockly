@@ -18,6 +18,7 @@
       loadDefaultLayoutConfig()
         .then(initializeDefaultLayout)
         .then(initializeBlocksPanel)
+        .then(initializeBlocklyVariablesModal)
         .then(initializeCodePanel)
         .then(initializeOutputPanel)
         .then(initializeInternationalization)
@@ -87,6 +88,144 @@
           });
       })
       .then(restoreFromLocalStorage);
+  }
+
+
+  function initializeBlocklyVariablesModal() {
+    function getFormData() {
+      let data = $("#blockly-variables-modal-container").serializeJSON();
+      if (data.variables == undefined) return [];
+      return Object.keys(data.variables).map(k => data.variables[k]);
+    }
+
+    function validateForm() {
+      let inputs = $("#blockly-variables-modal").find("[name*='[name]']");
+      inputs.each(function () { this.classList.remove("is-invalid"); });
+
+      let valid = true;
+      let regex = /^[a-zA-Z_][a-zA-Z_0-9]*$/;
+      for (let i = 0; i < inputs.length; i++) {
+        let input_i = inputs.get(i);
+
+        // Check valid identifier
+        if (!regex.test(input_i.value)) {
+          input_i.classList.add("is-invalid");
+          valid = false;
+        }
+
+        // Check for duplicates
+        for (let j = i + 1; j < inputs.length; j++) {
+          let input_j = inputs.get(j);
+
+          if (input_i.value == input_j.value) {
+            input_i.classList.add("is-invalid");
+            input_j.classList.add("is-invalid");
+            valid = false;
+          }
+        }
+      }
+      return valid;
+    }
+
+    function getDefaultVariable() {
+      let data = getFormData();
+      let variableNames = new Set(data.map(m  => m.name));
+      let variable = {name: "variable"};
+      let i = 1;
+      while (variableNames.has(variable.name)) {
+        variable.name = "variable" + i;
+        i++;
+      }
+      return variable;
+    }
+
+    function appendVariableRow(i, variable, usedVariables) {
+
+      function createTextInput(controlValue, controlName, validationFn) {
+        let input = $("<input>")
+          .attr("type", "text")
+          .addClass("form-control")
+          .addClass("text-center")
+          .css("padding-right", "initial") // Fix for weird css alignment issue when is-invalid
+          .attr("name", controlName);
+        if (validationFn != undefined) {
+          input.on("keyup", validationFn);
+        }
+        input.get(0).value = controlValue;
+        return input;
+      }
+      function createRemoveButton(row) {
+        let btn = $("<button>")
+          .addClass("btn")
+          .addClass("btn-sm")
+          .attr("type", "button")
+          .append($("<i>")
+            .addClass("fas")
+            .addClass("fa-minus"));
+
+        if (usedVariables.has(variable.name)) {
+          btn
+            //.attr("disabled", "true")
+            .addClass("btn-outline-secondary")
+            .attr("data-toggle", "tooltip")
+            .attr("data-placement", "left")
+            .attr("title", i18n.translate("This variable is being used by the program!"))
+            .on("click", function () {
+              btn.tooltip("toggle");
+            });
+        } else {
+          btn
+            .addClass("btn-outline-danger")
+            .on("click", function () { row.remove(); validateForm(); });
+        }
+        return btn;
+      }
+      let tr = $("<tr>")
+        .append($("<input>").attr("type", "hidden").attr("name", "variables[" + i + "][index]").attr("value", i))
+        .append($("<td>").append(createTextInput(variable.name, "variables[" + i + "][name]", validateForm)))
+      tr.append($("<td>").append(createRemoveButton(tr)));
+      $("#blockly-variables-modal-container-tbody").append(tr);
+    }
+
+    $("#add-variable-row-button").on("click", function () {
+      let data = getFormData();
+      let nextIndex = data.length == 0 ? 0: 1 + Math.max.apply(null, data.map(m => m.index));
+      appendVariableRow(nextIndex, getDefaultVariable(), UziBlock.getUsedVariables());
+    });
+
+    UziBlock.getWorkspace().registerButtonCallback("configureVariables", function () {
+      // Build modal UI
+      $("#blockly-variables-modal-container-tbody").html("");
+      let allVariables = UziBlock.getVariables();
+      let usedVariables = UziBlock.getUsedVariables();
+      if (allVariables.length == 0) {
+        appendVariableRow(0, getDefaultVariable(), usedVariables);
+      } else {
+        allVariables.forEach(function (variable, i) {
+          appendVariableRow(i, variable, usedVariables);
+        });
+      }
+      $("#blockly-variables-modal").modal("show");
+      validateForm();
+    });
+
+    $("#blockly-variables-modal").on("hide.bs.modal", function (evt) {
+      if (!validateForm()) {
+        evt.preventDefault();
+        evt.stopImmediatePropagation();
+        return;
+      }
+
+      let data = getFormData();
+      UziBlock.setVariables(data);
+      UziBlock.refreshToolbox();
+      saveToLocalStorage();
+    });
+
+    $("#blockly-variables-modal-container").on("submit", function (e) {
+      e.preventDefault();
+      $("#blockly-variables-modal").modal("hide");
+    });
   }
 
   function initializeCodePanel() {
