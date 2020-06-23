@@ -30,30 +30,40 @@ class Builder {
 		this.newline();
 		return this;
 	}
+	appendLines(strs) {
+		if (!Array.isArray(strs)) { strs = arguments; }
+		for (let i = 0; i < strs.length; i++) {
+			this.appendLine(strs[i]);
+		}
+		return this;
+	}
 	toString() {
 		return this.content.join("");
 	}
 }
 
 let BlocksToPy = (function () {
-	let topLevelBlocks = ["simulator_loop",
+	let topLevelBlocks = ["simulator_setup", "simulator_loop",
 												"proc_definition_0args", "proc_definition_1args",
 												"proc_definition_2args", "proc_definition_3args",
 												"func_definition_0args", "func_definition_1args",
 												"func_definition_2args", "func_definition_3args"];
 	let dispatchTable =  {
+		simulator_setup: function (block, ctx) {
+			throw "NOT_IMPLEMENTED_YET";
+		},
 		simulator_loop: function (block, ctx) {
-			let id = XML.getId(block);
-			ctx.builder.appendLine("while ACAACA:")
+			ctx.builder.indent()
+				.appendLine("while robot.step(TIME_STEP) != -1:")
 				.incrementLevel(() => {
 					generateCodeForStatements(block, ctx, "statements");
 				});
 		},
 		forever: function (block, ctx) {
-			let id = XML.getId(block);
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
-			stream.push(builder.forever(id, statements));
+			ctx.builder.indent().appendLine("while true:")
+				.incrementLevel(() => {
+					generateCodeForStatements(block, ctx, "statements");
+				});
 		},
 		for: function (block, ctx) {
 			let id = XML.getId(block);
@@ -66,17 +76,12 @@ let BlocksToPy = (function () {
 			stream.push(builder.for(id, variableName, start, stop, step, statements));
 		},
 		number: function (block, ctx) {
-			let id = XML.getId(block);
 			let value = parseFloat(XML.getChildNode(block, "value").innerText);
-			stream.push(builder.number(id, value));
+			ctx.builder.append(value.toString());
 		},
 		variable: function (block, ctx) {
-			let id = XML.getId(block);
 			let variableName = asIdentifier(XML.getChildNode(block, "variableName").innerText);
-			if (!ctx.isLocalDefined(variableName)) {
-				ctx.addGlobal(variableName);
-			}
-			stream.push(builder.variable(id, variableName));
+			ctx.builder.append(variableName);
 		},
 		delay: function (block, ctx) {
 			let id = XML.getId(block);
@@ -92,32 +97,37 @@ let BlocksToPy = (function () {
 			stream.push(builder.primitiveCall(id, selector, [time]));
 		},
 		conditional_simple: function (block, ctx) {
-			let id = XML.getId(block);
-			let condition = generateCodeForValue(block, ctx, "condition");
-			let trueBranch = [];
-			generateCodeForStatements(block, ctx, "trueBranch", trueBranch);
-			stream.push(builder.conditional(id, condition, trueBranch, []));
+			ctx.builder.indent().append("if ");
+			generateCodeForValue(block, ctx, "condition");
+			ctx.builder.appendLine(":")
+				.incrementLevel(() => {
+					generateCodeForStatements(block, ctx, "trueBranch");
+				});
 		},
 		conditional_full: function (block, ctx) {
-			let id = XML.getId(block);
-			let condition = generateCodeForValue(block, ctx, "condition");
-			let trueBranch = [];
-			generateCodeForStatements(block, ctx, "trueBranch", trueBranch);
-			let falseBranch = [];
-			generateCodeForStatements(block, ctx, "falseBranch", falseBranch);
-			stream.push(builder.conditional(id, condition, trueBranch, falseBranch));
+			ctx.builder.indent().append("if ");
+			generateCodeForValue(block, ctx, "condition");
+			ctx.builder.appendLine(":")
+				.incrementLevel(() => {
+					generateCodeForStatements(block, ctx, "trueBranch");
+				});
+			ctx.builder.indent().appendLine("else:")
+				.incrementLevel(() => {
+					generateCodeForStatements(block, ctx, "trueBranch");
+				});
 		},
 		logical_compare: function (block, ctx) {
-			let id = XML.getId(block);
 			let type = XML.getChildNode(block, "operator").innerText;
-			let left = generateCodeForValue(block, ctx, "left");
-			let right = generateCodeForValue(block, ctx, "right");
 			let valid = ["==", "!=", "<", "<=", ">", ">="];
 			if (!valid.includes(type)) {
 				throw "Logical operator not found: '" + type + "'";
 			}
 			let selector = type;
-			stream.push(builder.primitiveCall(id, selector, [left, right]));
+			ctx.builder.append("(");
+			generateCodeForValue(block, ctx, "left");
+			ctx.builder.append(" " + selector + " ");
+			generateCodeForValue(block, ctx, "right");
+			ctx.builder.append(")");
 		},
 		elapsed_time: function (block, ctx) {
 			let id = XML.getId(block);
@@ -133,25 +143,26 @@ let BlocksToPy = (function () {
 			stream.push(builder.primitiveCall(id, selector, []));
 		},
 		logical_operation: function (block, ctx) {
-			let id = XML.getId(block);
 			let type = XML.getChildNode(block, "operator").innerText;
-			let left = generateCodeForValue(block, ctx, "left");
-			let right = generateCodeForValue(block, ctx, "right");
+			ctx.builder.append("(");
+			generateCodeForValue(block, ctx, "left");
 			if (type === "and") {
-				stream.push(builder.logicalAnd(id, left, right));
+				ctx.builder.append(" and ");
 			} else if (type === "or") {
-				stream.push(builder.logicalOr(id, left, right));
+				ctx.builder.append(" or ");
+			} else {
+				throw "Invalid logical operator found: '" + type + "'";
 			}
+			generateCodeForValue(block, ctx, "right");
+			ctx.builder.append(")");
 		},
 		boolean: function (block, ctx) {
-			let id = XML.getId(block);
 			let bool = XML.getChildNode(block, "value").innerText;
-			stream.push(builder.number(id, bool === "true" ? 1 : 0));
+			ctx.builder.append(bool == "true" ? "True" : "False");
 		},
 		logical_not: function (block, ctx) {
-			let id = XML.getId(block);
-			let bool = generateCodeForValue(block, ctx, "value");
-			stream.push(builder.primitiveCall(id, "!", [bool]));
+			ctx.builder.append("not ");
+			generateCodeForValue(block, ctx, "value");
 		},
 		number_property: function (block, ctx) {
 			let id = XML.getId(block);
@@ -254,91 +265,72 @@ let BlocksToPy = (function () {
 			} else if (type === "SQRT1_2") {
 				value = Math.SQRT1_2;
 			} else if (type === "INFINITY") {
-				// HACK(Richo): Special case because JSON encodes Infinity as null
-				value = {___INF___: 1};
+				value = 'float("inf")';
 			} else {
 				throw "Math constant not found: '" + type + "'";
 			}
-			stream.push(builder.number(id, value));
+			ctx.builder.append(value.toString());
 		},
 		math_arithmetic: function (block, ctx) {
 			let id = XML.getId(block);
 			let type = XML.getChildNode(block, "operator").innerText;
-			let left = generateCodeForValue(block, ctx, "left");
-			let right = generateCodeForValue(block, ctx, "right");
 			let selector;
 			if (type === "DIVIDE") {
-				selector = "/";
+				selector = " / ";
 			} else if (type === "MULTIPLY") {
-				selector = "*";
+				selector = " * ";
 			} else if (type === "MINUS") {
-				selector = "-";
+				selector = " - ";
 			} else if (type === "ADD") {
-				selector = "+";
+				selector = " + ";
 			} else if (type === "POWER") {
-				selector = "**";
+				selector = " ** ";
 			} else {
 				throw "Math arithmetic function not found: '" + type + "'";
 			}
-			stream.push(builder.primitiveCall(id, selector, [left, right]));
+
+			ctx.builder.append("(");
+			generateCodeForValue(block, ctx, "left");
+			ctx.builder.append(selector);
+			generateCodeForValue(block, ctx, "right");
+			ctx.builder.append(")");
 		},
 		repeat: function (block, ctx) {
-			let id = XML.getId(block);
 			let negated = XML.getChildNode(block, "negate").innerText === "true";
-			let condition = generateCodeForValue(block, ctx, "condition");
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
-			if (negated) {
-				stream.push(builder.until(id, condition, statements));
-			} else {
-				stream.push(builder.while(id, condition, statements));
-			}
-		},
-		is_pin_variable: function (block, ctx) {
-			let id = XML.getId(block);
-			let pinState = XML.getChildNode(block, "pinState").innerText;
-			let pinNumber = generateCodeForValue(block, ctx, "pinNumber");
-			let selector = pinState === "on" ? "isOn" : "isOff";
-			stream.push(builder.primitiveCall(id, selector, [pinNumber]));
+			ctx.builder.indent().append("while ");
+			if (negated) { ctx.builder.append("not "); }
+			generateCodeForValue(block, ctx, "condition");
+			ctx.builder.appendLine(":");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
 		},
 		wait: function (block, ctx) {
-			let id = XML.getId(block);
 			let negated = XML.getChildNode(block, "negate").innerText === "true";
-			let condition = generateCodeForValue(block, ctx, "condition");
-			if (negated) {
-				stream.push(builder.until(id, condition, []));
-			} else {
-				stream.push(builder.while(id, condition, []));
-			}
+			ctx.builder.indent().append("while ");
+			if (negated) { ctx.builder.append("not "); }
+			generateCodeForValue(block, ctx, "condition");
+			ctx.builder.appendLine(":")
+				.incrementLevel(() => ctx.builder.indent().appendLine("pass"));
 		},
 		number_modulo: function (block, ctx) {
-			let id = XML.getId(block);
-			let left = generateCodeForValue(block, ctx, "dividend");
-			let right = generateCodeForValue(block, ctx, "divisor");
-			stream.push(builder.primitiveCall(id, "%", [left, right]));
+			ctx.builder.append("(");
+			generateCodeForValue(block, ctx, "dividend");
+			ctx.builder.append(" % ");
+			generateCodeForValue(block, ctx, "divisor");
+			ctx.builder.append(")");
 		},
 		set_variable: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "variableName").innerText);
-			if (!ctx.isLocalDefined(name)) {
-				ctx.addGlobal(name);
-			}
-			let value = generateCodeForValue(block, ctx, "value");
-			if (value == undefined) {
-				value = builder.number(id, 0);
-			}
-			stream.push(builder.assignment(id, name, value));
+			ctx.builder.indent().append(name).append(" = ");
+			generateCodeForValue(block, ctx, "value");
+			ctx.builder.newline();
 		},
 		increment_variable: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "variableName").innerText);
-			if (!ctx.isLocalDefined(name)) {
-				ctx.addGlobal(name);
-			}
-			let delta = generateCodeForValue(block, ctx, "value");
-			let variable = builder.variable(id, name);
-			stream.push(builder.assignment(id, name,
-				builder.primitiveCall(id, "+", [variable, delta])));
+			ctx.builder.indent().append(name).append(" = ").append(name).append(" + ");
+			generateCodeForValue(block, ctx, "value");
+			ctx.builder.newline();
 		},
 		number_constrain: function (block, ctx) {
 			let id = XML.getId(block);
@@ -495,12 +487,11 @@ let BlocksToPy = (function () {
 			stream.push(builder.scriptCall(id, funcName, args));
 		},
 		return: function (block, ctx) {
-			let id = XML.getId(block);
-			stream.push(builder.return(id, null));
+			ctx.builder.indent().appendLine("return");
 		},
 		return_value: function (block, ctx) {
-			let id = XML.getId(block);
-			stream.push(builder.return(id, generateCodeForValue(block, ctx, "value")));
+			ctx.builder.indent().appendLine("return ");
+			generateCodeForValue(block, ctx, "value")
 		},
 	};
 
@@ -528,22 +519,27 @@ let BlocksToPy = (function () {
 	function generateCodeForValue(block, ctx, name) {
 		let child = XML.getChildNode(block, name);
 		if (child === undefined) return undefined;
-		let stream = [];
 		generateCodeFor(XML.getLastChild(child), ctx);
-		if (stream.length != 1) {
-			throw "CODEGEN ERROR: Value block didn't generate single code element";
-		}
-		return stream[0];
 	}
 
 	function generateCodeForStatements(block, ctx, name) {
+		let stmts = getStatements(block, name);
+		if (stmts.length == 0) {
+			ctx.builder.indent().appendLine("pass");
+		} else {
+			stmts.forEach(stmt => generateCodeFor(stmt, ctx));
+		}
+	}
+
+	function getStatements(block, name) {
 		let child = XML.getChildNode(block, name || "statements");
+		let stmts = [];
 		if (child !== undefined) {
 			child.childNodes.forEach(function (each) {
 				let next = each;
 				do {
 					try {
-						generateCodeFor(next, ctx);
+						stmts.push(next);
 					} catch (err) {
 						console.log(err);
 					}
@@ -551,6 +547,7 @@ let BlocksToPy = (function () {
 				} while (next !== undefined);
 			});
 		}
+		return stmts;
 	}
 
 	function getNextStatement(block) {
@@ -570,6 +567,13 @@ let BlocksToPy = (function () {
 	return {
 		generate: function (xml) {
 			let builder = new Builder();
+			builder.appendLines("from controller import Robot, DistanceSensor, Motor",
+													"",
+													"TIME_STEP = 64",
+													"MAX_SPEED = 6.28",
+													"",
+													"robot = Robot()",
+													"");
 			let ctx = {
 				builder: builder,
 				path: [xml]
