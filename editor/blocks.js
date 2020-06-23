@@ -24,9 +24,6 @@ let UziBlock = (function () {
 
   let version = 1;
   let blocklyArea, blocklyDiv, workspace;
-  let motors = [];
-  let sonars = [];
-  let joysticks = [];
   let variables = [];
   let observers = {
     "change" : [],
@@ -37,9 +34,6 @@ let UziBlock = (function () {
     blocklyDiv = $("#blockly").get(0);
 
     initCommonBlocks();
-    initSoundBlocks();
-    initButtonBlocks();
-    initJoystickBlocks();
     initSpecialBlocks();
 
     i18n.on("change", refreshWorkspace);
@@ -150,57 +144,6 @@ let UziBlock = (function () {
         }
 
         return Array.from(node.children);
-      });
-
-      workspace.registerToolboxCategoryCallback("DC_MOTORS", function () {
-        let node = XML.getChildNode(XML.getChildNode(toolbox, "Motors", "originalName"), "DC", "originalName");
-        let nodes = Array.from(node.children);
-        if (motors.length == 0) {
-          nodes.splice(1); // Leave the button only
-        } else {
-          let fields = node.getElementsByTagName("field");
-          for (let i = 0; i < fields.length; i++) {
-            let field = fields[i];
-            if (field.getAttribute("name") === "motorName") {
-              field.innerText = motors[motors.length-1].name;
-            }
-          }
-        }
-        return nodes;
-      });
-
-      workspace.registerToolboxCategoryCallback("SONAR", function () {
-        let node = XML.getChildNode(XML.getChildNode(toolbox, "Sensors", "originalName"), "Sonar", "originalName");
-        let nodes = Array.from(node.children);
-        if (sonars.length == 0) {
-          nodes.splice(1); // Leave the button only
-        } else {
-          let fields = node.getElementsByTagName("field");
-          for (let i = 0; i < fields.length; i++) {
-            let field = fields[i];
-            if (field.getAttribute("name") === "sonarName") {
-              field.innerText = sonars[sonars.length-1].name;
-            }
-          }
-        }
-        return nodes;
-      });
-
-      workspace.registerToolboxCategoryCallback("JOYSTICK", function () {
-        let node = XML.getChildNode(XML.getChildNode(toolbox, "Sensors", "originalName"), "Joystick", "originalName");
-        let nodes = Array.from(node.children);
-        if (joysticks.length == 0) {
-          nodes.splice(1); // Leave the button only
-        } else {
-          let fields = node.getElementsByTagName("field");
-          for (let i = 0; i < fields.length; i++) {
-            let field = fields[i];
-            if (field.getAttribute("name") === "joystickName") {
-              field.innerText = joysticks[joysticks.length-1].name;
-            }
-          }
-        }
-        return nodes;
       });
 
       workspace.registerToolboxCategoryCallback("VARIABLES", function () {
@@ -330,6 +273,23 @@ let UziBlock = (function () {
   function trim(str) { return str.trim(); }
 
   function initCommonBlocks() {
+    Blockly.Blocks['simulator_loop'] = {
+      init: function() {
+        let msg = i18n.translate("simulator loop \n %1");
+        let inputFields = {
+          "1": () => this.appendStatementInput("statements")
+                    .setCheck(null)
+        };
+
+        initBlock(this, msg, inputFields);
+
+        this.setPreviousStatement(false, null);
+        this.setNextStatement(false, null);
+        this.setColour(210);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
 
     Blockly.Blocks['toggle_variable'] = {
       init: function() {
@@ -1017,7 +977,7 @@ let UziBlock = (function () {
       init: function() {
         let msg = i18n.translate("arithmetic function %left %operator %right");
         let inputFields = {
-          "left": () => this.appendValueInput("left").setCheck("Number"), 
+          "left": () => this.appendValueInput("left").setCheck("Number"),
           "operator": () => this.appendDummyInput().appendField(
                   new Blockly.FieldDropdown([[i18n.translate("arithmetic operator /"),"DIVIDE"],
                                              [i18n.translate("arithmetic operator *"),"MULTIPLY"],
@@ -1520,150 +1480,9 @@ let UziBlock = (function () {
   }
 
   function initSpecialBlocks() {
-    initTaskBlocks();
-    initDCMotorBlocks();
-    initSonarBlocks();
     initVariableBlocks();
     initProcedureBlocks();
     initFunctionBlocks();
-  }
-
-  function initTaskBlocks() {
-
-    let blocks = [
-      ["start_task", "start task %name"],
-      ["stop_task", "stop task %name"],
-      ["run_task", "run task %name"],
-      ["resume_task", "resume task %name"],
-      ["pause_task", "pause task %name"],
-    ];
-
-    blocks.forEach(function (block) {
-      let block_id = block[0];
-      let block_msg = block[1];
-      Blockly.Blocks[block_id] = {
-        init: function() {
-	  let msg = i18n.translate(block_msg);
-          let inputFields = {
-            "name": (input) => input.appendField(new Blockly.FieldDropdown(currentTasksForDropdown), "taskName")
-	  };
-
-          initBlock(this, msg, inputFields);
-
-          this.setPreviousStatement(true, null);
-          this.setNextStatement(true, null);
-          this.setColour(175);
-          this.setTooltip("");
-          this.setHelpUrl("");
-        }
-      };
-    });
-  }
-
-  function initDCMotorBlocks() {
-
-    Blockly.Blocks['move_dcmotor'] = {
-      init: function() {
-        let msg = i18n.translate("move dcmotor %name in %direction at speed %speed");
-        let inputFields = {
-          "name": input => input.appendField(
-            new Blockly.FieldDropdown(currentMotorsForDropdown), "motorName"),
-          "direction": input => input.appendField(
-            new Blockly.FieldDropdown([[i18n.translate("forward"),"fwd"],
-                                       [i18n.translate("backward"),"bwd"]]), "direction"),
-          "speed": () => this.appendValueInput("speed").setCheck("Number")
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['stop_dcmotor'] = {
-      init: function() {
-        let msg = i18n.translate("stop dcmotor %name");
-        let inputFields = {
-          "name": (input) => input.appendField(new Blockly.FieldDropdown(currentMotorsForDropdown), "motorName")
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['change_speed_dcmotor'] = {
-      init: function() {
-        let msg = i18n.translate("set dcmotor %name speed to %speed");
-        let inputFields = {
-          "name": input => input.appendField(
-            new Blockly.FieldDropdown(currentMotorsForDropdown), "motorName"),
-          "speed": () => this.appendValueInput("speed").setCheck("Number")
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['get_speed_dcmotor'] = {
-      init: function() {
-        let msg = i18n.translate("get dcmotor %name speed");
-        let inputFields = {
-          "name": input => input.appendField(
-            new Blockly.FieldDropdown(currentMotorsForDropdown), "motorName"),
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setOutput(true, "Number");
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-  }
-
-  function initSonarBlocks() {
-
-    Blockly.Blocks['get_sonar_distance'] = {
-      init: function() {
-        let msg = i18n.translate("read distance from sonar %name in units %unit");
-        let inputFields = {
-          "name": input => input.appendField(
-            new Blockly.FieldDropdown(currentSonarsForDropdown), "sonarName"),
-          "unit": input => input.appendField(new Blockly.FieldDropdown([[i18n.translate("distance_mm"), "mm"],
-                                                                [i18n.translate("distance_cm"), "cm"],
-                                                                [i18n.translate("distance_m"), "m"]]), "unit")
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setOutput(true, "Number");
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
   }
 
   function initVariableBlocks() {
@@ -2505,7 +2324,7 @@ let UziBlock = (function () {
 
   function getGeneratedCode(){
     let xml = Blockly.Xml.workspaceToDom(workspace);
-    return BlocksToAST.generate(xml, motors, sonars, joysticks);
+    return BlocksToPy.generate(xml);
   }
 
   function refreshWorkspace() {

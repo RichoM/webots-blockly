@@ -389,7 +389,7 @@
 		if (currentTime < autorunNextTime) return;
     autorunNextTime = undefined;
 
-		let currentProgram = getGeneratedCodeAsJSON();
+		let currentProgram = UziBlock.getGeneratedCode();
 		if (currentProgram === lastProgram) return;
     lastProgram = currentProgram;
 
@@ -398,11 +398,6 @@
       codeEditor.setValue(src, 1);
     }
 	}
-
-  function getGeneratedCodeAsJSON() { // TODO(RIcho): Return python?
-    let code = UziBlock.getGeneratedCode();
-    return JSON.stringify(code);
-  }
 
   return IDE;
 })();
