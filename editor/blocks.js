@@ -273,28 +273,10 @@ let UziBlock = (function () {
   function trim(str) { return str.trim(); }
 
   function initCommonBlocks() {
-    Blockly.Blocks['simulator_loop'] = {
-      init: function() {
-        let msg = i18n.translate("simulator loop \n %1");
-        let inputFields = {
-          "1": () => this.appendStatementInput("statements")
-                    .setCheck(null)
-        };
-
-        initBlock(this, msg, inputFields);
-
-        this.setPreviousStatement(false, null);
-        this.setNextStatement(false, null);
-        this.setColour(210);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
     Blockly.Blocks['toggle_variable'] = {
       init: function() {
-	let msg = i18n.translate("toggle pin %1");
-	let inputFields = {
+      	let msg = i18n.translate("toggle pin %1");
+      	let inputFields = {
           "1": () => this.appendValueInput("pinNumber")
                     .setCheck("Pin")
         };
@@ -1480,9 +1462,48 @@ let UziBlock = (function () {
   }
 
   function initSpecialBlocks() {
+    initStartBlocks();
     initVariableBlocks();
     initProcedureBlocks();
     initFunctionBlocks();
+  }
+
+  function initStartBlocks() {
+    Blockly.Blocks['simulator_setup'] = {
+      init: function() {
+        let msg = i18n.translate("setup %1");
+        let inputFields = {
+          "1": () => this.appendStatementInput("statements")
+                    .setCheck(null)
+        };
+
+        initBlock(this, msg, inputFields);
+
+        this.setPreviousStatement(false, null);
+        this.setNextStatement(false, null);
+        this.setColour(175);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+
+    Blockly.Blocks['simulator_loop'] = {
+      init: function() {
+        let msg = i18n.translate("loop %1");
+        let inputFields = {
+          "1": () => this.appendStatementInput("statements")
+                    .setCheck(null)
+        };
+
+        initBlock(this, msg, inputFields);
+
+        this.setPreviousStatement(false, null);
+        this.setNextStatement(false, null);
+        this.setColour(175);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
   }
 
   function initVariableBlocks() {

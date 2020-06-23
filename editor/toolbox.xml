@@ -1,6 +1,9 @@
 <xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
-  <category name="Control" colour="#5b80a5">
+  <category name="Start" colour="#5ba5a5">
+    <block type="simulator_setup"></block>
     <block type="simulator_loop"></block>
+  </category>
+  <category name="Control" colour="#5b80a5">
     <block type="conditional_simple">
       <value name="condition">
         <shadow type="boolean">
