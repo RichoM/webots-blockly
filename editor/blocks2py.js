@@ -586,11 +586,7 @@ let BlocksToPy = (function () {
 			child.childNodes.forEach(function (each) {
 				let next = each;
 				do {
-					try {
-						stmts.push(next);
-					} catch (err) {
-						console.log(err);
-					}
+					stmts.push(next);
 					next = getNextStatement(next);
 				} while (next !== undefined);
 			});
