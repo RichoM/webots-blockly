@@ -629,8 +629,6 @@ let UziBlock = (function () {
           "2": () => this.appendDummyInput()
                     .appendField(new Blockly.FieldDropdown([[i18n.translate("is even"),"even"],
                                                     [i18n.translate("is odd"),"odd"],
-                                                    [i18n.translate("is prime"),"prime"],
-                                                    [i18n.translate("is whole"),"whole"],
                                                     [i18n.translate("is positive"),"positive"],
                                                     [i18n.translate("is negative"),"negative"]]), "property")
         };
