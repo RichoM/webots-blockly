@@ -418,7 +418,7 @@ let BlocksToPy = (function () {
 			args.forEach((arg, i) => {
 				if (i > 0) { ctx.builder.append(", "); }
 				ctx.builder.append(arg);
-			})
+			});
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
 				generateCodeForStatements(block, ctx, "statements");
@@ -426,30 +426,38 @@ let BlocksToPy = (function () {
 			ctx.builder.newline();
 		},
 		proc_call_0args: function (block, ctx) {
-			let id = XML.getId(block);
 			let procName = asIdentifier(XML.getChildNode(block, "procName").innerText);
-			stream.push(builder.scriptCall(id, procName, []));
+			ctx.builder.indent().append(procName).appendLine("()");
 		},
 		proc_call_1args: function (block, ctx) {
-			let id = XML.getId(block);
 			let procName = asIdentifier(XML.getChildNode(block, "procName").innerText);
-			let args = [{name: null, value: generateCodeForValue(block, ctx, "arg0")}];
-			stream.push(builder.scriptCall(id, procName, args));
+			let args = ["arg0"];
+			ctx.builder.indent().append(procName).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				generateCodeForValue(block, ctx, arg);
+			})
+			ctx.builder.appendLine(")");
 		},
 		proc_call_2args: function (block, ctx) {
-			let id = XML.getId(block);
 			let procName = asIdentifier(XML.getChildNode(block, "procName").innerText);
-			let args = [{name: null, value: generateCodeForValue(block, ctx, "arg0")},
-									{name: null, value: generateCodeForValue(block, ctx, "arg1")}];
-			stream.push(builder.scriptCall(id, procName, args));
+			let args = ["arg0", "arg1"];
+			ctx.builder.indent().append(procName).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				generateCodeForValue(block, ctx, arg);
+			})
+			ctx.builder.appendLine(")");
 		},
 		proc_call_3args: function (block, ctx) {
-			let id = XML.getId(block);
 			let procName = asIdentifier(XML.getChildNode(block, "procName").innerText);
-			let args = [{name: null, value: generateCodeForValue(block, ctx, "arg0")},
-									{name: null, value: generateCodeForValue(block, ctx, "arg1")},
-									{name: null, value: generateCodeForValue(block, ctx, "arg2")}];
-			stream.push(builder.scriptCall(id, procName, args));
+			let args = ["arg0", "arg1", "arg2"];
+			ctx.builder.indent().append(procName).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				generateCodeForValue(block, ctx, arg);
+			})
+			ctx.builder.appendLine(")");
 		},
 		func_definition_0args: function (block, ctx) {
 			let name = asIdentifier(XML.getChildNode(block, "funcName").innerText);
@@ -508,30 +516,38 @@ let BlocksToPy = (function () {
 			ctx.builder.newline();
 		},
 		func_call_0args: function (block, ctx) {
-			let id = XML.getId(block);
 			let funcName = asIdentifier(XML.getChildNode(block, "funcName").innerText);
-			stream.push(builder.scriptCall(id, funcName, []));
+			ctx.builder.append(funcName).append("()");
 		},
 		func_call_1args: function (block, ctx) {
-			let id = XML.getId(block);
 			let funcName = asIdentifier(XML.getChildNode(block, "funcName").innerText);
-			let args = [{name: null, value: generateCodeForValue(block, ctx, "arg0")}];
-			stream.push(builder.scriptCall(id, funcName, args));
+			let args = ["arg0"];
+			ctx.builder.append(funcName).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				generateCodeForValue(block, ctx, arg);
+			})
+			ctx.builder.append(")");
 		},
 		func_call_2args: function (block, ctx) {
-			let id = XML.getId(block);
 			let funcName = asIdentifier(XML.getChildNode(block, "funcName").innerText);
-			let args = [{name: null, value: generateCodeForValue(block, ctx, "arg0")},
-									{name: null, value: generateCodeForValue(block, ctx, "arg1")}];
-			stream.push(builder.scriptCall(id, funcName, args));
+			let args = ["arg0", "arg1"];
+			ctx.builder.append(funcName).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				generateCodeForValue(block, ctx, arg);
+			})
+			ctx.builder.append(")");
 		},
 		func_call_3args: function (block, ctx) {
-			let id = XML.getId(block);
 			let funcName = asIdentifier(XML.getChildNode(block, "funcName").innerText);
-			let args = [{name: null, value: generateCodeForValue(block, ctx, "arg0")},
-									{name: null, value: generateCodeForValue(block, ctx, "arg1")},
-									{name: null, value: generateCodeForValue(block, ctx, "arg2")}];
-			stream.push(builder.scriptCall(id, funcName, args));
+			let args = ["arg0", "arg1", "arg2"];
+			ctx.builder.append(funcName).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				generateCodeForValue(block, ctx, arg);
+			})
+			ctx.builder.append(")");
 		},
 		return: function (block, ctx) {
 			ctx.builder.indent().appendLine("return");
