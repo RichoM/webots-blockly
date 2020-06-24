@@ -50,7 +50,9 @@ let BlocksToPy = (function () {
 												"func_definition_2args", "func_definition_3args"];
 	let dispatchTable =  {
 		simulator_setup: function (block, ctx) {
-			throw "NOT_IMPLEMENTED_YET";
+			let stmts = getStatements(block, name);
+			stmts.forEach(stmt => generateCodeFor(stmt, ctx));
+			if (stmts.length > 0) { ctx.builder.newline(); }
 		},
 		simulator_loop: function (block, ctx) {
 			ctx.builder.indent()
