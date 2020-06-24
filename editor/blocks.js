@@ -2198,72 +2198,7 @@ let UziBlock = (function () {
     getGeneratedCode: getGeneratedCode,
 
     getWorkspace: function () { return workspace; },
-    getMotors: function () { return motors; },
-    setMotors: function (data) {
-      let renames = new Map();
-      data.forEach(function (m) {
-        if (motors[m.index] == undefined) return;
-        renames.set(motors[m.index].name, m.name);
-      });
 
-      workspace.getAllBlocks()
-        .map(b => ({ block: b, field: b.getField("motorName") }))
-        .filter(o => o.field != undefined)
-        .forEach(function (o) {
-          let value = renames.get(o.field.getValue());
-          if (value == undefined) {
-            o.block.dispose(true);
-          } else {
-            o.field.setValue(value);
-          }
-        });
-
-      motors = data;
-    },
-    getSonars: function () { return sonars; },
-    setSonars: function (data) {
-      let renames = new Map();
-      data.forEach(function (m) {
-        if (sonars[m.index] == undefined) return;
-        renames.set(sonars[m.index].name, m.name);
-      });
-
-      workspace.getAllBlocks()
-        .map(b => ({ block: b, field: b.getField("sonarName") }))
-        .filter(o => o.field != undefined)
-        .forEach(function (o) {
-          let value = renames.get(o.field.getValue());
-          if (value == undefined) {
-            o.block.dispose(true);
-          } else {
-            o.field.setValue(value);
-          }
-        });
-
-      sonars = data;
-    },
-    getJoysticks: function () { return joysticks; },
-    setJoysticks: function (data) {
-      let renames = new Map();
-      data.forEach(function (m) {
-        if (joysticks[m.index] == undefined) return;
-        renames.set(joysticks[m.index].name, m.name);
-      });
-
-      workspace.getAllBlocks()
-        .map(b => ({ block: b, field: b.getField("joystickName") }))
-        .filter(o => o.field != undefined)
-        .forEach(function (o) {
-          let value = renames.get(o.field.getValue());
-          if (value == undefined) {
-            o.block.dispose(true);
-          } else {
-            o.field.setValue(value);
-          }
-        });
-
-      joysticks = data;
-    },
     getVariables: function () { return variables; },
     setVariables: function (data) {
       let renames = new Map();
@@ -2289,9 +2224,6 @@ let UziBlock = (function () {
       return {
         version: version,
         blocks: toXML(),
-        motors: motors,
-        sonars: sonars,
-        joysticks: joysticks,
         variables: variables,
       };
     },
@@ -2300,9 +2232,6 @@ let UziBlock = (function () {
       if (d.version != version) { return; }
 
       fromXML(d.blocks);
-      motors = d.motors || [];
-      sonars = d.sonars || [];
-      joysticks = d.joysticks || [];
       variables = d.variables || [];
     },
     getUsedVariables: getUsedVariables,
