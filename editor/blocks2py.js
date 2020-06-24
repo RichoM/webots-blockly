@@ -370,39 +370,60 @@ let BlocksToPy = (function () {
 			stream.push(builder.variableDeclaration(id, name, value));
 		},
 		proc_definition_0args: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "procName").innerText);
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
-			let args = [];
-			stream.push(builder.procedure(id, name, args, statements));
+			ctx.builder.append("def ").append(name).appendLine("():");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
+			ctx.builder.newline();
 		},
 		proc_definition_1args: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "procName").innerText);
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
 			let args = [asIdentifier(XML.getChildNode(block, "arg0").innerText)];
-			stream.push(builder.procedure(id, name, args, statements));
+
+			ctx.builder.append("def ").append(name).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				ctx.builder.append(arg);
+			})
+			ctx.builder.appendLine("):");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
+			ctx.builder.newline();
 		},
 		proc_definition_2args: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "procName").innerText);
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
 			let args = [asIdentifier(XML.getChildNode(block, "arg0").innerText),
 									asIdentifier(XML.getChildNode(block, "arg1").innerText)];
-			stream.push(builder.procedure(id, name, args, statements));
+
+			ctx.builder.append("def ").append(name).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				ctx.builder.append(arg);
+			})
+			ctx.builder.appendLine("):");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
+			ctx.builder.newline();
 		},
 		proc_definition_3args: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "procName").innerText);
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
 			let args = [asIdentifier(XML.getChildNode(block, "arg0").innerText),
 									asIdentifier(XML.getChildNode(block, "arg1").innerText),
 									asIdentifier(XML.getChildNode(block, "arg2").innerText)];
-			stream.push(builder.procedure(id, name, args, statements));
+
+			ctx.builder.append("def ").append(name).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				ctx.builder.append(arg);
+			})
+			ctx.builder.appendLine("):");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
+			ctx.builder.newline();
 		},
 		proc_call_0args: function (block, ctx) {
 			let id = XML.getId(block);
@@ -431,39 +452,60 @@ let BlocksToPy = (function () {
 			stream.push(builder.scriptCall(id, procName, args));
 		},
 		func_definition_0args: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "funcName").innerText);
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
-			let args = [];
-			stream.push(builder.function(id, name, args, statements));
+			ctx.builder.append("def ").append(name).appendLine("():");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
+			ctx.builder.newline();
 		},
 		func_definition_1args: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "funcName").innerText);
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
 			let args = [asIdentifier(XML.getChildNode(block, "arg0").innerText)];
-			stream.push(builder.function(id, name, args, statements));
+
+			ctx.builder.append("def ").append(name).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				ctx.builder.append(arg);
+			})
+			ctx.builder.appendLine("):");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
+			ctx.builder.newline();
 		},
 		func_definition_2args: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "funcName").innerText);
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
 			let args = [asIdentifier(XML.getChildNode(block, "arg0").innerText),
 									asIdentifier(XML.getChildNode(block, "arg1").innerText)];
-			stream.push(builder.function(id, name, args, statements));
+
+			ctx.builder.append("def ").append(name).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				ctx.builder.append(arg);
+			})
+			ctx.builder.appendLine("):");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
+			ctx.builder.newline();
 		},
 		func_definition_3args: function (block, ctx) {
-			let id = XML.getId(block);
 			let name = asIdentifier(XML.getChildNode(block, "funcName").innerText);
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
 			let args = [asIdentifier(XML.getChildNode(block, "arg0").innerText),
 									asIdentifier(XML.getChildNode(block, "arg1").innerText),
 									asIdentifier(XML.getChildNode(block, "arg2").innerText)];
-			stream.push(builder.function(id, name, args, statements));
+
+			ctx.builder.append("def ").append(name).append("(");
+			args.forEach((arg, i) => {
+				if (i > 0) { ctx.builder.append(", "); }
+				ctx.builder.append(arg);
+			})
+			ctx.builder.appendLine("):");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
+			ctx.builder.newline();
 		},
 		func_call_0args: function (block, ctx) {
 			let id = XML.getId(block);
