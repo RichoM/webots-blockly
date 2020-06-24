@@ -88,19 +88,6 @@ let BlocksToPy = (function () {
 			let variableName = asIdentifier(XML.getChildNode(block, "variableName").innerText);
 			ctx.builder.append(variableName);
 		},
-		delay: function (block, ctx) {
-			let id = XML.getId(block);
-			let unit = XML.getChildNode(block, "unit").innerText;
-			let time = generateCodeForValue(block, ctx, "time");
-			let selector;
-			if (unit === "ms") { selector = "delayMs"; }
-			else if (unit === "s") { selector = "delayS"; }
-			else if (unit === "m") { selector = "delayM"; }
-			else {
-				throw "Invalid delay unit: '" + unit + "'";
-			}
-			stream.push(builder.primitiveCall(id, selector, [time]));
-		},
 		conditional_simple: function (block, ctx) {
 			ctx.builder.indent().append("if ");
 			generateCodeForValue(block, ctx, "condition");
@@ -133,19 +120,6 @@ let BlocksToPy = (function () {
 			ctx.builder.append(" " + selector + " ");
 			generateCodeForValue(block, ctx, "right");
 			ctx.builder.append(")");
-		},
-		elapsed_time: function (block, ctx) {
-			let id = XML.getId(block);
-			let unit = XML.getChildNode(block, "unit").innerText;
-			let selector;
-			if (unit === "ms") {
-				selector = "millis";
-			} else if (unit === "s") {
-				selector = "seconds";
-			} else if (unit === "m") {
-				selector = "minutes";
-			}
-			stream.push(builder.primitiveCall(id, selector, []));
 		},
 		logical_operation: function (block, ctx) {
 			let type = XML.getChildNode(block, "operator").innerText;
@@ -336,21 +310,6 @@ let BlocksToPy = (function () {
 			ctx.builder.indent().append(name).append(" = ").append(name).append(" + ");
 			generateCodeForValue(block, ctx, "value");
 			ctx.builder.newline();
-		},
-		number_constrain: function (block, ctx) {
-			let id = XML.getId(block);
-			let value = generateCodeForValue(block, ctx, "value");
-			let low = generateCodeForValue(block, ctx, "low");
-			let high = generateCodeForValue(block, ctx, "high");
-			stream.push(builder.primitiveCall(id, "constrain", [value, low, high]));
-		},
-		number_between: function (block, ctx) {
-			let id = XML.getId(block);
-			let args = [
-				{name: "value", value: generateCodeForValue(block, ctx, "value")},
-				{name: "min", value: generateCodeForValue(block, ctx, "low")},
-				{name: "max", value: generateCodeForValue(block, ctx, "high")}];
-			stream.push(builder.scriptCall(id, "isBetween", args));
 		},
 		number_random_int: function (block, ctx) {
 			let id = XML.getId(block);
