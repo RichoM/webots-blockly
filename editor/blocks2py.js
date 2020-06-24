@@ -66,14 +66,17 @@ let BlocksToPy = (function () {
 				});
 		},
 		for: function (block, ctx) {
-			let id = XML.getId(block);
 			let variableName = asIdentifier(XML.getChildNode(block, "variableName").innerText);
-			let start = generateCodeForValue(block, ctx, "start");
-			let stop = generateCodeForValue(block, ctx, "stop");
-			let step = generateCodeForValue(block, ctx, "step");
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
-			stream.push(builder.for(id, variableName, start, stop, step, statements));
+			ctx.builder.indent().append("for ").append(variableName).append(" in range(");
+			generateCodeForValue(block, ctx, "start");
+			ctx.builder.append(", ");
+			generateCodeForValue(block, ctx, "stop");
+			ctx.builder.append(", ");
+			generateCodeForValue(block, ctx, "step");
+			ctx.builder.appendLine("):");
+			ctx.builder.incrementLevel(() => {
+				generateCodeForStatements(block, ctx, "statements");
+			});
 		},
 		number: function (block, ctx) {
 			let value = parseFloat(XML.getChildNode(block, "value").innerText);
