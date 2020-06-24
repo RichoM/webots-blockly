@@ -144,90 +144,105 @@ let BlocksToPy = (function () {
 			generateCodeForValue(block, ctx, "value");
 		},
 		number_property: function (block, ctx) {
-			let id = XML.getId(block);
 			let type = XML.getChildNode(block, "property").innerText;
-			let num = generateCodeForValue(block, ctx, "value");
-			let args = [num];
-			let selector;
-			if (type === "even") {
-				selector = "isEven";
-			} else if (type === "odd") {
-				selector = "isOdd";
-			} else if (type === "prime") {
-				selector = "isPrime";
-			} else if (type === "whole") {
-				selector = "isWhole";
-			} else if (type === "positive") {
-				selector = "isPositive";
-			} else if (type === "negative") {
-				selector = "isNegative";
-			} else {
+			let valid = ["even", "odd", "positive", "negative"];
+			if (!valid.includes(type)) {
 				throw "Math number property not found: '" + type + "'";
 			}
-			stream.push(builder.primitiveCall(id, selector, args));
+			ctx.builder.append("(");
+			generateCodeForValue(block, ctx, "value");
+			if (type === "even") {
+				ctx.builder.append(" % 2 == 0");
+			} else if (type === "odd") {
+				ctx.builder.append(" % 2 != 0");
+			} else if (type === "positive") {
+				ctx.builder.append(" >= 0");
+			} else if (type === "negative") {
+				ctx.builder.append(" < 0");
+			}
+			ctx.builder.append(")");
 		},
 		number_divisibility: function (block, ctx) {
-			let id = XML.getId(block);
-			let left = generateCodeForValue(block, ctx, "left");
-			let right = generateCodeForValue(block, ctx, "right");
-			selector = "isDivisibleBy";
-			let args = [left, right];
-			stream.push(builder.primitiveCall(id, selector, args));
-		},
-		repeat_times: function (block, ctx) {
-			let id = XML.getId(block);
-			let times = generateCodeForValue(block, ctx, "times");
-			let statements = [];
-			generateCodeForStatements(block, ctx, "statements", statements);
-			stream.push(builder.repeat(id, times, statements));
+			ctx.builder.append("(");
+			generateCodeForValue(block, ctx, "left");
+			ctx.builder.append(" % ");
+			generateCodeForValue(block, ctx, "right");
+			ctx.builder.append(" == 0");
+			ctx.builder.append(")");
 		},
 		number_round: function (block, ctx) {
-			let id = XML.getId(block);
 			let type = XML.getChildNode(block, "operator").innerText;
-			let num = generateCodeForValue(block, ctx, "number");
 			let valid = ["round", "ceil", "floor"];
 			if (!valid.includes(type)) {
 				throw "Math round type not found: '" + type + "'";
 			}
-			let selector = type;
-			stream.push(builder.primitiveCall(id, selector, [num]));
+			if (type == "round") {
+				ctx.builder.append("round(");
+			} else if (type == "ceil") {
+				ctx.builder.append("ceil(");
+			} else if (type == "floor") {
+				ctx.builder.append("floor(");
+			}
+			generateCodeForValue(block, ctx, "number");
+			ctx.builder.append(")");
+
+			if (type != "round") {
+				ctx.imports.add("from math import *");
+			}
 		},
 		number_operation: function (block, ctx) {
-			let id = XML.getId(block);
+
 			let type = XML.getChildNode(block, "operator").innerText;
-			let num = generateCodeForValue(block, ctx, "number");
-			let selector;
-			let args = [num];
-			if (type === "sqrt") {
-				selector = "sqrt";
-			} else if (type === "abs") {
-				selector = "abs";
-			} else if (type === "negate") {
-				selector = "*";
-				args.push(builder.number(id, -1));
-			} else if (type === "ln") {
-				selector = "ln";
-			} else if (type === "log10") {
-				selector = "log10";
-			} else if (type === "exp") {
-				selector = "exp";
-			} else if (type === "pow10") {
-				selector = "pow10";
-			} else {
+			let valid = ["sqrt", "abs", "negate", "ln", "log10", "exp", "pow10"];
+			if (!valid.includes(type)) {
 				throw "Math function not found: '" + type + "'";
 			}
-			stream.push(builder.primitiveCall(id, selector, args));
+
+			let num = () => generateCodeForValue(block, ctx, "number");
+			if (type === "sqrt") { // sqrt(num)
+				ctx.builder.append("sqrt(")
+				num();
+				ctx.builder.append(")");
+			} else if (type === "abs") { // fabs(num)
+				ctx.builder.append("fabs(")
+				num();
+				ctx.builder.append(")");
+			} else if (type === "negate") { // num * -1
+				ctx.builder.append("(");
+				num();
+				ctx.builder.append("* -1)");
+			} else if (type === "ln") { // log(num)
+				ctx.builder.append("log(");
+				num();
+				ctx.builder.append(")");
+			} else if (type === "log10") { // log10(num)
+				ctx.builder.append("log10(");
+				num();
+				ctx.builder.append(")");
+			} else if (type === "exp") { // exp(num)
+				ctx.builder.append("exp(");
+				num();
+				ctx.builder.append(")");
+			} else if (type === "pow10") { // pow(10, num)
+				ctx.builder.append("pow(10, ");
+				num();
+				ctx.builder.append(")");
+			}
+
+			if (type != "negate") {
+				ctx.imports.add("from math import *");
+			}
 		},
 		number_trig: function (block, ctx) {
-			let id = XML.getId(block);
 			let type = XML.getChildNode(block, "operator").innerText;
-			let num = generateCodeForValue(block, ctx, "number");
 			let valid = ["sin", "cos", "tan", "asin", "acos", "atan"];
 			if (!valid.includes(type)) {
 				throw "Math trig function not found: '" + type + "'";
 			}
-			let selector = type;
-			stream.push(builder.primitiveCall(id, selector, [num]));
+			ctx.builder.append(type);
+			ctx.builder.append("(");
+			generateCodeForValue(block, ctx, "number");
+			ctx.builder.append(")");
 		},
 		math_constant: function (block, ctx) {
 			let id = XML.getId(block);
@@ -312,21 +327,18 @@ let BlocksToPy = (function () {
 			ctx.builder.newline();
 		},
 		number_random_int: function (block, ctx) {
-			let id = XML.getId(block);
-			let from = generateCodeForValue(block, ctx, "from");
-			let to = generateCodeForValue(block, ctx, "to");
-			stream.push(builder.primitiveCall(id, "randomInt", [from, to]));
+			ctx.builder.append("randint(");
+			generateCodeForValue(block, ctx, "from");
+			ctx.builder.append(", ");
+			generateCodeForValue(block, ctx, "to");
+			ctx.builder.append(")");
+
+			ctx.imports.add("from random import *");
 		},
 		number_random_float: function (block, ctx) {
-			let id = XML.getId(block);
-			stream.push(builder.primitiveCall(id, "random", []));
-		},
-		declare_local_variable: function (block, ctx) {
-			let id = XML.getId(block);
-			let name = asIdentifier(XML.getChildNode(block, "variableName").innerText);
-			let value = generateCodeForValue(block, ctx, "value");
+			ctx.builder.append("random()");
 
-			stream.push(builder.variableDeclaration(id, name, value));
+			ctx.imports.add("from random import *");
 		},
 		proc_definition_0args: function (block, ctx) {
 			let name = asIdentifier(XML.getChildNode(block, "procName").innerText);
@@ -585,17 +597,10 @@ let BlocksToPy = (function () {
 
 	return {
 		generate: function (xml) {
-			let builder = new Builder();
-			builder.appendLines("from controller import Robot, DistanceSensor, Motor",
-													"",
-													"TIME_STEP = 64",
-													"MAX_SPEED = 6.28",
-													"",
-													"robot = Robot()",
-													"");
 			let ctx = {
-				builder: builder,
-				path: [xml]
+				builder: new Builder(),
+				path: [xml],
+				imports: new Set(),
 			};
 			Array.from(xml.childNodes).filter(isTopLevel).forEach(function (block) {
 				try {
@@ -605,7 +610,16 @@ let BlocksToPy = (function () {
 					throw err;
 				}
 			});
-			return builder.toString();
+			return ["from controller import Robot, DistanceSensor, Motor"]
+				.concat(Array.from(ctx.imports))
+				.concat("",
+								"TIME_STEP = 64",
+								"MAX_SPEED = 6.28",
+								"",
+								"robot = Robot()",
+								"",
+								ctx.builder.toString())
+				.join("\n");
 		}
 	}
 })();
