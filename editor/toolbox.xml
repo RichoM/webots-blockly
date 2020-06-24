@@ -55,13 +55,6 @@
       </value>
     </block>
     <block type="forever"></block>
-    <block type="repeat_times">
-      <value name="times">
-        <shadow type="number">
-          <field name="value">5</field>
-        </shadow>
-      </value>
-    </block>
     <block type="repeat">
       <field name="negate">false</field>
       <value name="condition">
@@ -77,17 +70,6 @@
           <field name="value">true</field>
         </shadow>
       </value>
-    </block>
-    <block type="delay">
-      <field name="unit">ms</field>
-      <value name="time">
-        <shadow type="number">
-          <field name="value">1000</field>
-        </shadow>
-      </value>
-    </block>
-    <block type="elapsed_time">
-      <field name="unit">ms</field>
     </block>
     <block type="for">
       <field name="variableName">i</field>
@@ -234,14 +216,6 @@
   </category>
   <category name="Variables" colour="#A65C81" custom="VARIABLES">
     <button text="Configure variables..." callbackKey="configureVariables"></button>
-    <block type="declare_local_variable">
-      <field name="variableName">temp</field>
-      <value name="value">
-        <shadow type="number">
-          <field name="value">0</field>
-        </shadow>
-      </value>
-    </block>
     <block type="set_variable">
       <field name="variableName"></field>
       <value name="value">

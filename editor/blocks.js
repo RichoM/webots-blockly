@@ -273,25 +273,6 @@ let UziBlock = (function () {
   function trim(str) { return str.trim(); }
 
   function initCommonBlocks() {
-    Blockly.Blocks['toggle_variable'] = {
-      init: function() {
-      	let msg = i18n.translate("toggle pin %1");
-      	let inputFields = {
-          "1": () => this.appendValueInput("pinNumber")
-                    .setCheck("Pin")
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
     Blockly.Blocks['wait'] = {
       init: function() {
         let msg = i18n.translate("wait %1 %2");
@@ -308,113 +289,6 @@ let UziBlock = (function () {
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
         this.setColour(210);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['turn_pin_variable'] = {
-      init: function() {
-        let msg = i18n.translate("set state %1 on pin %2");
-        let inputFields = {
-          "1": input => input.appendField(new Blockly.FieldDropdown([[i18n.translate("turn state on"), "on"],
-                                                                [i18n.translate("turn state off"), "off"]]),
-                                                               "pinState"),
-          "2": () => this.appendValueInput("pinNumber").setCheck("Pin")
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['is_pin_variable'] = {
-      init: function() {
-        let msg = i18n.translate("is %1 pin %2");
-        let inputFields = {
-          "1": input => input.appendField(
-            new Blockly.FieldDropdown([[i18n.translate("pin state on"), "on"],
-                                       [i18n.translate("pin state off"), "off"]]),
-                                      "pinState"),
-          "2": () => this.appendValueInput("pinNumber").setCheck("Pin")
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setOutput(true, "Boolean");
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['read_pin_variable'] = {
-      init: function() {
-        let msg = i18n.translate("read pin %1");
-        let inputFields = {
-          "1": () => this.appendValueInput("pinNumber").setCheck("Pin")
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setOutput(true, "Number");
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['write_pin_variable'] = {
-      init: function() {
-        let msg = i18n.translate("set pin %1 to value %2");
-        let inputFields = {
-          "1": () => this.appendValueInput("pinNumber")
-                         .setCheck("Pin")
-                         .setAlign(Blockly.ALIGN_RIGHT),
-          "2": () => this.appendValueInput("pinValue")
-                         .setCheck(["Number", "Boolean"])
-                         .setAlign(Blockly.ALIGN_RIGHT)
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['set_pin_mode'] = {
-      init: function() {
-        let msg = i18n.translate("set pin %1 mode to %2");
-        let inputFields = {
-          "1": () => this.appendValueInput("pinNumber")
-                    .setCheck("Pin")
-                    .setAlign(Blockly.ALIGN_RIGHT),
-          "2": input => input
-                    .setAlign(Blockly.ALIGN_RIGHT)
-                    .appendField(new Blockly.FieldDropdown([[i18n.translate("INPUT"),"INPUT"],
-                                                            [i18n.translate("OUTPUT"),"OUTPUT"],
-                                                            [i18n.translate("INPUT PULLUP"),"INPUT_PULLUP"]]), "mode")
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(0);
         this.setTooltip("");
         this.setHelpUrl("");
       }
@@ -461,37 +335,6 @@ let UziBlock = (function () {
       }
     };
 
-    Blockly.Blocks['comment_statement'] = {
-      init: function() {
-        this.appendDummyInput()
-            .appendField("\"")
-            .appendField(new Blockly.FieldTextInput(i18n.translate("This is a comment")), "comment")
-            .appendField("\"");
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(20);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['comment_expression'] = {
-      init: function() {
-        this.appendDummyInput()
-            .appendField("\"")
-            .appendField(new Blockly.FieldTextInput(i18n.translate("This is a comment")), "comment")
-            .appendField("\"");
-        this.appendValueInput("NAME")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_CENTRE);
-        //this.setInputsInline(true);
-        this.setOutput(true, null);
-        this.setColour(20);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
     Blockly.Blocks['elapsed_time'] = {
       init: function() {
         let msg = i18n.translate("elapsed time since bootup in %timeUnit");
@@ -506,49 +349,6 @@ let UziBlock = (function () {
         //this.setInputsInline(true);
         this.setOutput(true, "Number");
         this.setColour(210);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['set_servo_degrees'] = {
-      init: function() {
-        let msg = i18n.translate("set degrees of servo on pin %1 to %2");
-        let inputFields = {
-          "1": () => this.appendValueInput("pinNumber")
-                    .setCheck("Pin")
-                    .setAlign(Blockly.ALIGN_RIGHT),
-          "2": () => this.appendValueInput("servoValue")
-                    .setCheck("Number")
-                    .setAlign(Blockly.ALIGN_RIGHT)
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(0);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-
-    Blockly.Blocks['get_servo_degrees'] = {
-      init: function() {
-        let msg = i18n.translate("get degrees of servo on pin %1");
-        let inputFields = {
-          "1": () => this.appendValueInput("pinNumber")
-                    .setCheck("Pin")
-                    .setAlign(Blockly.ALIGN_RIGHT),
-        };
-
-        initBlock(this, msg, inputFields);
-
-        //this.setInputsInline(true);
-        this.setOutput(true, "Number");
-        this.setColour(0);
         this.setTooltip("");
         this.setHelpUrl("");
       }
