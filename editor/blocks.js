@@ -823,56 +823,6 @@ let UziBlock = (function () {
       }
     };
 
-    Blockly.Blocks['number_constrain'] = {
-      init: function() {
-        let msg = i18n.translate("constrain %1 low %2 high %3");
-        let inputFields = {
-            "1": () => this.appendValueInput("value")
-                      .setCheck("Number")
-                      .setAlign(Blockly.ALIGN_RIGHT),
-            "2": () => this.appendValueInput("low")
-                      .setCheck("Number")
-                      .setAlign(Blockly.ALIGN_RIGHT),
-            "3": () => this.appendValueInput("high")
-                      .setCheck("Number")
-                      .setAlign(Blockly.ALIGN_RIGHT)
-        };
-
-        initBlock(this, msg, inputFields);
-
-        this.setInputsInline(true);
-        this.setOutput(true, "Number");
-        this.setColour(230);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
-    Blockly.Blocks['number_between'] = {
-      init: function() {
-        let msg = i18n.translate("is %1 between %2 and %3");
-        let inputFields = {
-            "1": () => this.appendValueInput("value")
-                      .setCheck("Number")
-                      .setAlign(Blockly.ALIGN_RIGHT),
-            "2": () => this.appendValueInput("low")
-                      .setCheck("Number")
-                      .setAlign(Blockly.ALIGN_RIGHT),
-            "3": () => this.appendValueInput("high")
-                      .setCheck("Number")
-                      .setAlign(Blockly.ALIGN_RIGHT)
-        };
-
-        initBlock(this, msg, inputFields);
-
-        this.setInputsInline(true);
-        this.setOutput(true, "Boolean");
-        this.setColour(230);
-        this.setTooltip("");
-        this.setHelpUrl("");
-      }
-    };
-
     Blockly.Blocks['number_random_int'] = {
       init: function() {
         let msg = i18n.translate("random integer from %1 to %2");

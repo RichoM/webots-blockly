@@ -166,40 +166,6 @@
         </shadow>
       </value>
     </block>
-    <block type="number_constrain">
-      <value name="value">
-        <shadow type="number">
-          <field name="value">50</field>
-        </shadow>
-      </value>
-      <value name="low">
-        <shadow type="number">
-          <field name="value">1</field>
-        </shadow>
-      </value>
-      <value name="high">
-        <shadow type="number">
-          <field name="value">100</field>
-        </shadow>
-      </value>
-    </block>
-    <block type="number_between">
-      <value name="value">
-        <shadow type="number">
-          <field name="value">50</field>
-        </shadow>
-      </value>
-      <value name="low">
-        <shadow type="number">
-          <field name="value">1</field>
-        </shadow>
-      </value>
-      <value name="high">
-        <shadow type="number">
-          <field name="value">100</field>
-        </shadow>
-      </value>
-    </block>
     <block type="number_random_int">
       <value name="from">
         <shadow type="number">
