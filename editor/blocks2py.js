@@ -113,7 +113,7 @@ let BlocksToPy = (function () {
 				});
 			ctx.builder.indent().appendLine("else:")
 				.incrementLevel(() => {
-					generateCodeForStatements(block, ctx, "trueBranch");
+					generateCodeForStatements(block, ctx, "falseBranch");
 				});
 		},
 		logical_compare: function (block, ctx) {
