@@ -537,8 +537,9 @@ let BlocksToPy = (function () {
 			ctx.builder.indent().appendLine("return");
 		},
 		return_value: function (block, ctx) {
-			ctx.builder.indent().appendLine("return ");
-			generateCodeForValue(block, ctx, "value")
+			ctx.builder.indent().append("return ");
+			generateCodeForValue(block, ctx, "value");
+			ctx.builder.newline();
 		},
 	};
 
