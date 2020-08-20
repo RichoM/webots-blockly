@@ -3,6 +3,16 @@
     <block type="simulator_setup"></block>
     <block type="simulator_loop"></block>
   </category>
+  <category name="Robot" colour="0">
+    <block type="motor_setvelocity">
+      <field name="motorName">motorIzquierdo</field>
+      <value name="motorSpeed">
+        <shadow type="number">
+          <field name="value">100</field>
+        </shadow>
+      </value>
+    </block>
+  </category>
   <category name="Control" colour="#5b80a5">
     <block type="conditional_simple">
       <value name="condition">

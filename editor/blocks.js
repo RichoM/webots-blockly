@@ -859,6 +859,7 @@ let UziBlock = (function () {
 
   function initSpecialBlocks() {
     initStartBlocks();
+    initRobotBlocks();
     initVariableBlocks();
     initProcedureBlocks();
     initFunctionBlocks();
@@ -896,6 +897,32 @@ let UziBlock = (function () {
         this.setPreviousStatement(false, null);
         this.setNextStatement(false, null);
         this.setColour(175);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+  }
+
+  function initRobotBlocks() {
+    Blockly.Blocks['motor_setvelocity'] = {
+      init: function() {
+        let msg = i18n.translate("establecer velocidad de %motorName en %motorSpeed");
+        let inputFields = {
+          "motorName": input => input.setAlign(Blockly.ALIGN_RIGHT)
+              .appendField(new Blockly.FieldDropdown([[i18n.translate("motorIzquierdo"), "motorIzquierdo"],
+                                                      [i18n.translate("motorDerecho"), "motorDerecho"]]),
+                                                      "motorName"),
+          "motorSpeed": () => this.appendValueInput("motorSpeed")
+                                  .setCheck("Number")
+                                  .setAlign(Blockly.ALIGN_RIGHT)
+        };
+
+        initBlock(this, msg, inputFields);
+
+        //this.setInputsInline(false);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(0);
         this.setTooltip("");
         this.setHelpUrl("");
       }

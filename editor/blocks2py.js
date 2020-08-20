@@ -61,6 +61,12 @@ let BlocksToPy = (function () {
 					generateCodeForStatements(block, ctx, "statements");
 				});
 		},
+		motor_setvelocity: function (block, ctx) {
+			let motorName = asIdentifier(XML.getChildNode(block, "motorName").innerText);
+			ctx.builder.indent().append(motorName).append(".setVelocity(");
+			generateCodeForValue(block, ctx, "motorSpeed");
+			ctx.builder.appendLine(" / 100 * MAX_SPEED)");
+		},
 		forever: function (block, ctx) {
 			ctx.builder.indent().appendLine("while true:")
 				.incrementLevel(() => {
@@ -666,10 +672,15 @@ let BlocksToPy = (function () {
 			return ["from controller import Robot, DistanceSensor, Motor"]
 				.concat(Array.from(ctx.imports))
 				.concat("",
-								"TIME_STEP = 64",
-								"MAX_SPEED = 6.28",
+								"TIME_STEP = 32", // TODO(Richo)
+								"MAX_SPEED = 20", // TODO(Richo)
 								"",
 								"robot = Robot()",
+								'',
+								'motorIzquierdo = robot.getMotor("motorIzquierdo")',
+								'motorIzquierdo.setPosition(float("inf"))',
+								'motorDerecho = robot.getMotor("motorDerecho")',
+								'motorDerecho.setPosition(float("inf"))',
 								"",
 								ctx.builder.toString())
 				.join("\n");
