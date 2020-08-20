@@ -2092,8 +2092,22 @@ let UziBlock = (function () {
   }
 
   function getGeneratedCode(){
-    let xml = Blockly.Xml.workspaceToDom(workspace);
-    return BlocksToPy.generate(xml);
+    try {
+      workspace.getAllBlocks().forEach(b => b.setWarningText(null));
+      let xml = Blockly.Xml.workspaceToDom(workspace);
+      return BlocksToPy.generate(xml);
+    } catch (err) {
+      let errors = err["errors"];
+      if (errors) {
+        for (let i = 0; i < errors.length; i++) {
+          let block = workspace.getBlockById(err.errors[i]["block"]);
+          if (block) {
+            block.setWarningText(err.errors[i]["msg"]);
+          }
+        }
+      }
+      throw err;
+    }
   }
 
   function refreshWorkspace() {

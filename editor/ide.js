@@ -23,18 +23,16 @@
         .then(initializeAutorun)
         .then(initializeOutputPanel)
         .then(initializeInternationalization)
-        .then(() => {
-          setInterval(function () {
-            let msg = (+new Date()) +  " RICHO CAPO!";
-            appendToOutput({type: "info", text: msg});
-            appendToOutput({type: "success", text: msg});
-            appendToOutput({type: "error", text: msg});
-            appendToOutput({type: "warning", text: msg});
-            appendToOutput({type: "info", text: ""});
-          }, 500);
-        });
+        .then(welcomeMessage);
     },
   };
+
+  function welcomeMessage() {
+    appendToOutput({type: "success", text: "--------------------------------"});
+    appendToOutput({type: "success", text: "Bienvenido a webots-blockly!"});
+    appendToOutput({type: "success", text: "--------------------------------"});
+    appendNewline();
+  }
 
   function loadDefaultLayoutConfig() {
     return ajax.GET("default-layout.json")
@@ -292,6 +290,26 @@
     }, 1000);
   }
 
+  function appendError(err) {
+    let text = err["summary"];
+    if (text) {
+      appendToOutput({type: "error", text: text});
+      let errors = err["errors"];
+      if (errors) {
+        for (let i = 0; i < errors.length; i++) {
+          appendToOutput({type: "error", text: "[" + (i + 1) + "] " + errors[i]["msg"]});
+        }
+      }
+    } else {
+      appendToOutput({type: "error", text: err.toString()});
+    }
+    appendNewline();
+  }
+
+  function appendNewline() {
+    appendToOutput({type: "info", text: ""});
+  }
+
   function appendToOutput(entry) {
     // Remember the entry in case we need to update the panel (up to a fixed limit)
     if (outputHistory.length == 100) { outputHistory.shift(); }
@@ -389,13 +407,17 @@
 		if (currentTime < autorunNextTime) return;
     autorunNextTime = undefined;
 
-		let currentProgram = UziBlock.getGeneratedCode();
-		if (currentProgram === lastProgram) return;
-    lastProgram = currentProgram;
+    try {
+  		let currentProgram = UziBlock.getGeneratedCode();
+  		if (currentProgram === lastProgram) return;
+      lastProgram = currentProgram;
 
-    let src = currentProgram;
-    if (codeEditor.getValue() !== src) {
-      codeEditor.setValue(src, 1);
+      let src = currentProgram;
+      if (codeEditor.getValue() !== src) {
+        codeEditor.setValue(src, 1);
+      }
+    } catch (err) {
+      appendError(err);
     }
 	}
 

@@ -554,7 +554,14 @@ let BlocksToPy = (function () {
 	function generateCodeForValue(block, ctx, name) {
 		let child = XML.getChildNode(block, name);
 		if (child === undefined) return undefined;
-		generateCodeFor(XML.getLastChild(child), ctx);
+		let valueBlock = block;
+		try {
+			valueBlock = XML.getLastChild(child);
+			generateCodeFor(valueBlock, ctx);
+		} catch (err) {
+			ctx.registerError(valueBlock, err);
+			return undefined;
+		}
 	}
 
 	function generateCodeForStatements(block, ctx, name) {
@@ -562,7 +569,13 @@ let BlocksToPy = (function () {
 		if (stmts.length == 0) {
 			ctx.builder.indent().appendLine("pass");
 		} else {
-			stmts.forEach(stmt => generateCodeFor(stmt, ctx));
+			stmts.forEach(stmt => {
+				try {
+					generateCodeFor(stmt, ctx);
+				} catch (err) {
+					ctx.registerError(block, err);
+				}
+			});
 		}
 	}
 
@@ -595,21 +608,61 @@ let BlocksToPy = (function () {
 		return block.getAttribute("disabled") === "true";
 	}
 
+	function isLoop(block) {
+		return block.getAttribute("type") === "simulator_loop";
+	}
+
+	function isSetup(block) {
+		return block.getAttribute("type") === "simulator_setup";
+	}
+
+	function assertValidBlocks(blocks, ctx) {
+		let setupBlocks = blocks.filter(isSetup);
+		for (let i = 1; i < setupBlocks.length; i++) {
+			ctx.registerError(setupBlocks[i], 'Más de un bloque "setup"');
+		}
+
+		let loopBlocks = blocks.filter(isLoop);
+		for (let i = 1; i < loopBlocks.length; i++) {
+			ctx.registerError(loopBlocks[i], 'Más de un bloque "loop"');
+		}
+	}
+
+	function error(msg, errors) {
+		errors = errors || [];
+		return {summary: msg, errors: errors};
+	}
+
 	return {
 		generate: function (xml) {
 			let ctx = {
 				builder: new Builder(),
 				path: [xml],
 				imports: new Set(),
-			};
-			Array.from(xml.childNodes).filter(isTopLevel).forEach(function (block) {
-				try {
-					generateCodeFor(block, ctx);
-				} catch (err) {
-					//console.log(err);
-					throw err;
+				errors: [],
+
+				registerError: (block, msg) => {
+					ctx.errors.push({block: block.getAttribute("id"), msg: msg});
 				}
+			};
+
+			let blocks = Array.from(xml.childNodes).filter(isTopLevel);
+			assertValidBlocks(blocks, ctx);
+
+			blocks.sort((a, b) => {
+				if (isLoop(b)) return -1;
+				if (isLoop(a)) return 1;
+				return 0;
 			});
+
+			blocks.forEach(function (block) {
+				generateCodeFor(block, ctx);
+			});
+
+			if (ctx.errors.length > 0) {
+				throw error("Se encontraron los siguientes errores:", ctx.errors);
+			}
+
 			return ["from controller import Robot, DistanceSensor, Motor"]
 				.concat(Array.from(ctx.imports))
 				.concat("",
