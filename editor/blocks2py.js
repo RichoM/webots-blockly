@@ -358,7 +358,7 @@ let BlocksToPy = (function () {
 			let name = asIdentifier(XML.getChildNode(block, "procName").innerText);
 			ctx.builder.append("def ").append(name).appendLine("():");
 			ctx.builder.incrementLevel(() => {
-				handleGlobals(block, ctx);
+				handleGlobalsInsideScope(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -374,7 +374,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
-				handleGlobals(block, ctx);
+				handleGlobalsInsideScope(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -391,7 +391,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
-				handleGlobals(block, ctx);
+				handleGlobalsInsideScope(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -409,7 +409,7 @@ let BlocksToPy = (function () {
 			});
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
-				handleGlobals(block, ctx);
+				handleGlobalsInsideScope(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -452,7 +452,7 @@ let BlocksToPy = (function () {
 			let name = asIdentifier(XML.getChildNode(block, "funcName").innerText);
 			ctx.builder.append("def ").append(name).appendLine("():");
 			ctx.builder.incrementLevel(() => {
-				handleGlobals(block, ctx);
+				handleGlobalsInsideScope(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -468,7 +468,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
-				handleGlobals(block, ctx);
+				handleGlobalsInsideScope(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -485,7 +485,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
-				handleGlobals(block, ctx);
+				handleGlobalsInsideScope(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -503,7 +503,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
-				handleGlobals(block, ctx);
+				handleGlobalsInsideScope(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -556,19 +556,11 @@ let BlocksToPy = (function () {
 		return str.replace(/ /g, '_');
 	}
 
-	function handleGlobals(block, ctx) {
-		let globals = findAllVariablesInside(block).filter(n => !ctx.isLocalDefined(n));
+	function handleGlobalsInsideScope(block, ctx) {
+		let globals = ctx.findGlobalsInside(block);
 		if (globals.length > 0) {
 			ctx.builder.indent().append("global ").appendLine(globals.join(", "));
 		}
-	}
-
-	function findAllVariablesInside(block) {
-		let variableBlocks = new Set(["set_variable", "increment_variable", "variable"]);
-		let children = Array.from(block.getElementsByTagName("*"));
-		let vars = children.filter(each => variableBlocks.has(each.getAttribute("type")));
-		let names = vars.map(block => asIdentifier(XML.getChildNode(block, "variableName").innerText));
-		return Array.from(new Set(names));
 	}
 
 	function generateCodeFor(block, ctx) {
@@ -680,6 +672,14 @@ let BlocksToPy = (function () {
 
 				registerError: (block, msg) => {
 					ctx.errors.push({block: block.getAttribute("id"), msg: msg});
+				},
+
+				findGlobalsInside: function (block) {
+					let variableBlocks = new Set(["set_variable", "increment_variable", "variable"]);
+					let children = Array.from(block.getElementsByTagName("*"));
+					let vars = children.filter(each => variableBlocks.has(each.getAttribute("type")));
+					let names = vars.map(block => asIdentifier(XML.getChildNode(block, "variableName").innerText));
+					return Array.from(new Set(names)).filter(n => !ctx.isLocalDefined(n));
 				},
 
 				/*
