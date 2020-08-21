@@ -927,6 +927,26 @@ let UziBlock = (function () {
         this.setHelpUrl("");
       }
     };
+
+    Blockly.Blocks['sonar_getvalue'] = {
+      init: function() {
+        let msg = i18n.translate("leer distancia de %sonarName");
+        let inputFields = {
+          "sonarName": input => input.setAlign(Blockly.ALIGN_RIGHT)
+              .appendField(new Blockly.FieldDropdown([[i18n.translate("sensorDistanciaI"), "sensorDistanciaI"],
+                                                      [i18n.translate("sensorDistanciaD"), "sensorDistanciaD"]]),
+                                                      "sonarName")
+        };
+
+        initBlock(this, msg, inputFields);
+
+        //this.setInputsInline(false);
+        this.setOutput(true, null);
+        this.setColour(0);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
   }
 
   function initVariableBlocks() {

@@ -67,6 +67,10 @@ let BlocksToPy = (function () {
 			generateCodeForValue(block, ctx, "motorSpeed");
 			ctx.builder.appendLine(" / 100 * MAX_SPEED)");
 		},
+		sonar_getvalue: function (block, ctx) {
+			let sonarName = asIdentifier(XML.getChildNode(block, "sonarName").innerText);
+			ctx.builder.append(sonarName).append(".getValue()");
+		},
 		forever: function (block, ctx) {
 			ctx.builder.indent().appendLine("while true:")
 				.incrementLevel(() => {
@@ -679,8 +683,15 @@ let BlocksToPy = (function () {
 								'',
 								'motorIzquierdo = robot.getMotor("motorIzquierdo")',
 								'motorIzquierdo.setPosition(float("inf"))',
+								'',
 								'motorDerecho = robot.getMotor("motorDerecho")',
 								'motorDerecho.setPosition(float("inf"))',
+								'',
+								'sensorDistanciaI = robot.getDistanceSensor("sensorDistanciaI")',
+								'sensorDistanciaI.enable(TIME_STEP)',
+								'',
+								'sensorDistanciaD = robot.getDistanceSensor("sensorDistanciaD")',
+								'sensorDistanciaD.enable(TIME_STEP)',
 								"",
 								ctx.builder.toString())
 				.join("\n");
