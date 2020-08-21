@@ -358,6 +358,7 @@ let BlocksToPy = (function () {
 			let name = asIdentifier(XML.getChildNode(block, "procName").innerText);
 			ctx.builder.append("def ").append(name).appendLine("():");
 			ctx.builder.incrementLevel(() => {
+				handleGlobals(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -373,6 +374,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
+				handleGlobals(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -389,6 +391,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
+				handleGlobals(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -406,6 +409,7 @@ let BlocksToPy = (function () {
 			});
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
+				handleGlobals(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -448,6 +452,7 @@ let BlocksToPy = (function () {
 			let name = asIdentifier(XML.getChildNode(block, "funcName").innerText);
 			ctx.builder.append("def ").append(name).appendLine("():");
 			ctx.builder.incrementLevel(() => {
+				handleGlobals(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -463,6 +468,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
+				handleGlobals(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -479,6 +485,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
+				handleGlobals(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -496,6 +503,7 @@ let BlocksToPy = (function () {
 			})
 			ctx.builder.appendLine("):");
 			ctx.builder.incrementLevel(() => {
+				handleGlobals(block, ctx);
 				generateCodeForStatements(block, ctx, "statements");
 			});
 			ctx.builder.newline();
@@ -546,6 +554,21 @@ let BlocksToPy = (function () {
 
 	function asIdentifier(str) {
 		return str.replace(/ /g, '_');
+	}
+
+	function handleGlobals(block, ctx) {
+		let globals = findAllVariablesInside(block).filter(n => !ctx.isLocalDefined(n));
+		if (globals.length > 0) {
+			ctx.builder.indent().append("global ").appendLine(globals.join(", "));
+		}
+	}
+
+	function findAllVariablesInside(block) {
+		let variableBlocks = new Set(["set_variable", "increment_variable", "variable"]);
+		let children = Array.from(block.getElementsByTagName("*"));
+		let vars = children.filter(each => variableBlocks.has(each.getAttribute("type")));
+		let names = vars.map(block => asIdentifier(XML.getChildNode(block, "variableName").innerText));
+		return Array.from(new Set(names));
 	}
 
 	function generateCodeFor(block, ctx) {
@@ -657,7 +680,66 @@ let BlocksToPy = (function () {
 
 				registerError: (block, msg) => {
 					ctx.errors.push({block: block.getAttribute("id"), msg: msg});
-				}
+				},
+
+				/*
+				 * NOTE(Richo): For now, the only blocks capable of declaring local variables
+				 * are "declare_local_variable", "for", and the procedure definition blocks.
+				 * Unfortunately, "declare_local_variable" works a little different than the
+				 * rest so we need special code to traverse the xml tree.
+				 */
+				isLocalDefined: function (name) {
+					/*
+					 * For the "declare_local_variable" block we walk from the current block
+					 * element up through its parent chain looking for this type of block
+					 * and we check if it declares a variable with the specified name. If we
+					 * find it then we don't have to keep looking, we just return true.
+					 */
+					{
+						let currentElement = ctx.path[ctx.path.length - 1];
+						while (currentElement != null) {
+							if (currentElement.getAttribute("type") == "declare_local_variable") {
+								let field = XML.getChildNode(currentElement, "variableName");
+								if (field != undefined && field.innerText == name) {
+									return true; // We found our variable declaration!
+								}
+							}
+							currentElement = currentElement.parentElement;
+						}
+					}
+
+					/*
+					 * In the other cases, we just need to look at the ctx.path to find
+					 * the desired block. So, we start by filtering the path and then we
+					 * check if any of the blocks found define a variable with the specified
+					 * name.
+					 */
+					{
+						let interestingBlocks = {
+							for: ["variableName"],
+							proc_definition_1args: ["arg0"],
+							proc_definition_2args: ["arg0", "arg1"],
+							proc_definition_3args: ["arg0", "arg1", "arg2"],
+							func_definition_1args: ["arg0"],
+							func_definition_2args: ["arg0", "arg1"],
+							func_definition_3args: ["arg0", "arg1", "arg2"]
+						};
+						let interestingTypes = new Set(Object.keys(interestingBlocks));
+						let blocks = ctx.path.filter(b => interestingTypes.has(b.getAttribute("type")));
+						if (blocks.some(function (b) {
+							let fields = interestingBlocks[b.getAttribute("type")];
+							return fields.some(function (f) {
+								let field = XML.getChildNode(b, f);
+								return field != undefined && field.innerText == name;
+							});
+						})) {
+							return true; // We found our variable declaration!
+						}
+					}
+
+					// If we got here, the variable is not declared yet...
+					return false;
+				},
 			};
 
 			let blocks = Array.from(xml.childNodes).filter(isTopLevel);
