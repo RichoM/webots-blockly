@@ -66,14 +66,20 @@ let BlocksToPy = (function () {
 			ctx.builder.indent().append(motorName).append(".setVelocity(");
 			generateCodeForValue(block, ctx, "motorSpeed");
 			ctx.builder.appendLine(" / 100 * MAX_SPEED)");
+			ctx.addSetup(motorName + ' = robot.getMotor("' + motorName + '")');
+			ctx.addSetup(motorName + '.setPosition(float("inf"))')
 		},
 		sonar_getvalue: function (block, ctx) {
 			let sonarName = asIdentifier(XML.getChildNode(block, "sonarName").innerText);
 			ctx.builder.append(sonarName).append(".getValue()");
+			ctx.addSetup(sonarName + ' = robot.getDistanceSensor("' + sonarName + '")');
+			ctx.addSetup(sonarName + '.enable(TIME_STEP)');
 		},
 		floor_getcolor: function (block, ctx) {
 			// TODO(Richo): Transform the color into a value from 0 (black) to 100 (white)
 			ctx.builder.append("colorPiso.getImage()");
+			ctx.addSetup('colorPiso = robot.getCamera("colorPiso")');
+			ctx.addSetup('colorPiso.enable(TIME_STEP)');
 		},
 		forever: function (block, ctx) {
 			ctx.builder.indent().appendLine("while true:")
@@ -668,10 +674,16 @@ let BlocksToPy = (function () {
 				builder: new Builder(),
 				path: [xml],
 				imports: new Set(),
-				errors: [],
 
+				errors: [],
 				registerError: (block, msg) => {
 					ctx.errors.push({block: block.getAttribute("id"), msg: msg});
+				},
+
+				setups: [],
+				addSetup: function (setup) {
+					if (ctx.setups.includes(setup)) return;
+					ctx.setups.push(setup);
 				},
 
 				findGlobalsInside: function (block) {
@@ -766,23 +778,10 @@ let BlocksToPy = (function () {
 								"MAX_SPEED = 20", // TODO(Richo)
 								"",
 								"robot = Robot()",
-								'',
-								'motorIzquierdo = robot.getMotor("motorIzquierdo")',
-								'motorIzquierdo.setPosition(float("inf"))',
-								'',
-								'motorDerecho = robot.getMotor("motorDerecho")',
-								'motorDerecho.setPosition(float("inf"))',
-								'',
-								'sensorDistanciaI = robot.getDistanceSensor("sensorDistanciaI")',
-								'sensorDistanciaI.enable(TIME_STEP)',
-								'',
-								'sensorDistanciaD = robot.getDistanceSensor("sensorDistanciaD")',
-								'sensorDistanciaD.enable(TIME_STEP)',
-								'',
-								'colorPiso = robot.getCamera("colorPiso")',
-								'colorPiso.enable(TIME_STEP)',
-								"",
-								ctx.builder.toString())
+								"")
+				.concat(ctx.setups)
+				.concat("")
+				.concat(ctx.builder.toString())
 				.join("\n");
 		}
 	}
