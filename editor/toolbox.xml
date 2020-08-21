@@ -68,6 +68,8 @@
         </shadow>
       </value>
     </block>
+
+    <!--
     <block type="forever"></block>
     <block type="repeat">
       <field name="negate">false</field>
@@ -103,6 +105,7 @@
         </shadow>
       </value>
     </block>
+  -->
   </category>
   <category name="Math" colour="#5C68A6">
     <block type="number">
