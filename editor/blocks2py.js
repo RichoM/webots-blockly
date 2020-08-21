@@ -1,48 +1,144 @@
 
-class Builder {
-	constructor() {
-		this.content = [];
-		this.indentationLevel = 0;
-	}
-	indent() {
-		for (let i = 0; i < this.indentationLevel; i++) {
-			this.append("    ");
-		}
-		return this;
-	}
-	append(str) {
-		this.content.push(str);
-		return this;
-	}
-	newline() {
-		this.content.push("\n");
-		return this;
-	}
-	incrementLevel(fn) {
-		let level = 1;
-		this.indentationLevel += level;
-		fn();
-		this.indentationLevel -= level;
-		return this;
-	}
-	appendLine(str) {
-		this.append(str);
-		this.newline();
-		return this;
-	}
-	appendLines(strs) {
-		if (!Array.isArray(strs)) { strs = arguments; }
-		for (let i = 0; i < strs.length; i++) {
-			this.appendLine(strs[i]);
-		}
-		return this;
-	}
-	toString() {
-		return this.content.join("");
-	}
-}
-
 let BlocksToPy = (function () {
+
+	class Context {
+		constructor(xml) {
+			this.path = [xml];
+			this.builder = new Builder();
+			this.imports = new Set();
+			this.errors = [];
+			this.setups = [];
+		}
+
+		registerError(block, msg) {
+			this.errors.push({block: block.getAttribute("id"), msg: msg});
+		}
+		addSetup(setup) {
+			if (this.setups.includes(setup)) return;
+			this.setups.push(setup);
+		}
+		findGlobalsInside(block) {
+			let variableBlocks = new Set(["set_variable", "increment_variable", "variable"]);
+			let children = Array.from(block.getElementsByTagName("*"));
+			let vars = children.filter(each => variableBlocks.has(each.getAttribute("type")));
+			let names = vars.map(block => asIdentifier(XML.getChildNode(block, "variableName").innerText));
+			return Array.from(new Set(names)).filter(n => !this.isLocalDefined(n));
+		}
+
+		/*
+		 * NOTE(Richo): For now, the only blocks capable of declaring local variables
+		 * are "declare_local_variable", "for", and the procedure definition blocks.
+		 * Unfortunately, "declare_local_variable" works a little different than the
+		 * rest so we need special code to traverse the xml tree.
+		 */
+		isLocalDefined(name) {
+			/*
+			 * For the "declare_local_variable" block we walk from the current block
+			 * element up through its parent chain looking for this type of block
+			 * and we check if it declares a variable with the specified name. If we
+			 * find it then we don't have to keep looking, we just return true.
+			 */
+			{
+				let currentElement = this.path[this.path.length - 1];
+				while (currentElement != null) {
+					if (currentElement.getAttribute("type") == "declare_local_variable") {
+						let field = XML.getChildNode(currentElement, "variableName");
+						if (field != undefined && field.innerText == name) {
+							return true; // We found our variable declaration!
+						}
+					}
+					currentElement = currentElement.parentElement;
+				}
+			}
+
+			/*
+			 * In the other cases, we just need to look at the this.path to find
+			 * the desired block. So, we start by filtering the path and then we
+			 * check if any of the blocks found define a variable with the specified
+			 * name.
+			 */
+			{
+				let interestingBlocks = {
+					for: ["variableName"],
+					proc_definition_1args: ["arg0"],
+					proc_definition_2args: ["arg0", "arg1"],
+					proc_definition_3args: ["arg0", "arg1", "arg2"],
+					func_definition_1args: ["arg0"],
+					func_definition_2args: ["arg0", "arg1"],
+					func_definition_3args: ["arg0", "arg1", "arg2"]
+				};
+				let interestingTypes = new Set(Object.keys(interestingBlocks));
+				let blocks = this.path.filter(b => interestingTypes.has(b.getAttribute("type")));
+				if (blocks.some(function (b) {
+					let fields = interestingBlocks[b.getAttribute("type")];
+					return fields.some(function (f) {
+						let field = XML.getChildNode(b, f);
+						return field != undefined && field.innerText == name;
+					});
+				})) {
+					return true; // We found our variable declaration!
+				}
+			}
+
+			// If we got here, the variable is not declared yet...
+			return false;
+		}
+	}
+
+	class Builder {
+		constructor() {
+			this.content = [];
+			this.indentationLevel = 0;
+		}
+		indent() {
+			for (let i = 0; i < this.indentationLevel; i++) {
+				this.append("    ");
+			}
+			return this;
+		}
+		append(str) {
+			this.content.push(str);
+			return this;
+		}
+		newline() {
+			this.content.push("\n");
+			return this;
+		}
+		incrementLevel(fn) {
+			let level = 1;
+			this.indentationLevel += level;
+			fn();
+			this.indentationLevel -= level;
+			return this;
+		}
+		appendLine(str) {
+			this.append(str);
+			this.newline();
+			return this;
+		}
+		appendLines(strs) {
+			if (!Array.isArray(strs)) { strs = arguments; }
+			for (let i = 0; i < strs.length; i++) {
+				this.appendLine(strs[i]);
+			}
+			return this;
+		}
+		generateCodeUsing(ctx) {
+			return ["from controller import Robot"]
+				.concat(Array.from(ctx.imports))
+				.concat("",
+								"TIME_STEP = 32", // TODO(Richo)
+								"MAX_SPEED = 20", // TODO(Richo)
+								"",
+								"robot = Robot()",
+								"")
+				.concat(ctx.setups)
+				.concat("")
+				.concat(this.content.join(""))
+				.join("\n")
+		}
+	}
+
 	let topLevelBlocks = ["simulator_setup", "simulator_loop",
 												"proc_definition_0args", "proc_definition_1args",
 												"proc_definition_2args", "proc_definition_3args",
@@ -670,89 +766,7 @@ let BlocksToPy = (function () {
 
 	return {
 		generate: function (xml) {
-			let ctx = {
-				builder: new Builder(),
-				path: [xml],
-				imports: new Set(),
-
-				errors: [],
-				registerError: (block, msg) => {
-					ctx.errors.push({block: block.getAttribute("id"), msg: msg});
-				},
-
-				setups: [],
-				addSetup: function (setup) {
-					if (ctx.setups.includes(setup)) return;
-					ctx.setups.push(setup);
-				},
-
-				findGlobalsInside: function (block) {
-					let variableBlocks = new Set(["set_variable", "increment_variable", "variable"]);
-					let children = Array.from(block.getElementsByTagName("*"));
-					let vars = children.filter(each => variableBlocks.has(each.getAttribute("type")));
-					let names = vars.map(block => asIdentifier(XML.getChildNode(block, "variableName").innerText));
-					return Array.from(new Set(names)).filter(n => !ctx.isLocalDefined(n));
-				},
-
-				/*
-				 * NOTE(Richo): For now, the only blocks capable of declaring local variables
-				 * are "declare_local_variable", "for", and the procedure definition blocks.
-				 * Unfortunately, "declare_local_variable" works a little different than the
-				 * rest so we need special code to traverse the xml tree.
-				 */
-				isLocalDefined: function (name) {
-					/*
-					 * For the "declare_local_variable" block we walk from the current block
-					 * element up through its parent chain looking for this type of block
-					 * and we check if it declares a variable with the specified name. If we
-					 * find it then we don't have to keep looking, we just return true.
-					 */
-					{
-						let currentElement = ctx.path[ctx.path.length - 1];
-						while (currentElement != null) {
-							if (currentElement.getAttribute("type") == "declare_local_variable") {
-								let field = XML.getChildNode(currentElement, "variableName");
-								if (field != undefined && field.innerText == name) {
-									return true; // We found our variable declaration!
-								}
-							}
-							currentElement = currentElement.parentElement;
-						}
-					}
-
-					/*
-					 * In the other cases, we just need to look at the ctx.path to find
-					 * the desired block. So, we start by filtering the path and then we
-					 * check if any of the blocks found define a variable with the specified
-					 * name.
-					 */
-					{
-						let interestingBlocks = {
-							for: ["variableName"],
-							proc_definition_1args: ["arg0"],
-							proc_definition_2args: ["arg0", "arg1"],
-							proc_definition_3args: ["arg0", "arg1", "arg2"],
-							func_definition_1args: ["arg0"],
-							func_definition_2args: ["arg0", "arg1"],
-							func_definition_3args: ["arg0", "arg1", "arg2"]
-						};
-						let interestingTypes = new Set(Object.keys(interestingBlocks));
-						let blocks = ctx.path.filter(b => interestingTypes.has(b.getAttribute("type")));
-						if (blocks.some(function (b) {
-							let fields = interestingBlocks[b.getAttribute("type")];
-							return fields.some(function (f) {
-								let field = XML.getChildNode(b, f);
-								return field != undefined && field.innerText == name;
-							});
-						})) {
-							return true; // We found our variable declaration!
-						}
-					}
-
-					// If we got here, the variable is not declared yet...
-					return false;
-				},
-			};
+			let ctx = new Context(xml);
 
 			let blocks = Array.from(xml.childNodes).filter(isTopLevel);
 			assertValidBlocks(blocks, ctx);
@@ -771,18 +785,7 @@ let BlocksToPy = (function () {
 				throw error("Se encontraron los siguientes errores:", ctx.errors);
 			}
 
-			return ["from controller import Robot"]
-				.concat(Array.from(ctx.imports))
-				.concat("",
-								"TIME_STEP = 32", // TODO(Richo)
-								"MAX_SPEED = 20", // TODO(Richo)
-								"",
-								"robot = Robot()",
-								"")
-				.concat(ctx.setups)
-				.concat("")
-				.concat(ctx.builder.toString())
-				.join("\n");
+			return ctx.builder.generateCodeUsing(ctx);
 		}
 	}
 })();
