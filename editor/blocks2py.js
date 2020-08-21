@@ -3,11 +3,74 @@ let BlocksToPy = (function () {
 
 	class Context {
 		constructor(xml) {
+			this.xml = xml;
 			this.path = [xml];
 			this.builder = new Builder();
 			this.imports = new Set();
 			this.errors = [];
 			this.setups = [];
+			this.globals = new Set();
+		}
+
+		get topLevelBlocks() {
+			return Array.from(this.xml.childNodes).filter(isTopLevel);
+		}
+		get undefinedGlobals() {
+			let setupBlocks = this.topLevelBlocks.filter(isSetup);
+			let definedGlobals = new Set(setupBlocks.flatMap(block => {
+				return getStatements(block)
+					.filter(each => "set_variable" == each.getAttribute("type"))
+					.map(block => asIdentifier(XML.getChildNode(block, "variableName").innerText));
+			}));
+			return Array.from(this.globals).filter(g => !definedGlobals.has(g));
+		}
+
+		getGeneratedCode() {
+			let sections = [];
+			sections.push("from controller import Robot");
+
+			// IMPORTS
+			{
+				if (this.imports.size > 0) {
+					sections.push(Array.from(this.imports).join("\n"));
+					sections.push("");
+				}
+			}
+
+			// CONSTANTS
+			{
+				sections.push(["",
+											 "TIME_STEP = 32",
+											 "MAX_SPEED = 20", // TODO(Richo)
+											 "",
+											 "robot = Robot()"].join("\n"));
+				sections.push("");
+			}
+
+			// SETUPS
+			{
+				if (this.setups.length > 0) {
+						sections.push(this.setups.join("\n"));
+						sections.push("");
+				}
+			}
+
+			// UNDEFINED GLOBALS
+			{
+				let globals = this.undefinedGlobals;
+				if (globals.length > 0) {
+					sections.push(globals.map(g => g + " = 0").join("\n"));
+					//sections.push("");
+				}
+			}
+
+			// CODE
+			{
+				let code = this.builder.toString();
+				if (code.length > 0) { sections.push(code);	}
+			}
+
+			return sections.join("\n");
 		}
 
 		registerError(block, msg) {
@@ -16,6 +79,11 @@ let BlocksToPy = (function () {
 		addSetup(setup) {
 			if (this.setups.includes(setup)) return;
 			this.setups.push(setup);
+		}
+		registerGlobal(variableName) {
+			if (!this.isLocalDefined(variableName)) {
+				this.globals.add(variableName);
+			}
 		}
 		findGlobalsInside(block) {
 			let variableBlocks = new Set(["set_variable", "increment_variable", "variable"]);
@@ -123,19 +191,8 @@ let BlocksToPy = (function () {
 			}
 			return this;
 		}
-		generateCodeUsing(ctx) {
-			return ["from controller import Robot"]
-				.concat(Array.from(ctx.imports))
-				.concat("",
-								"TIME_STEP = 32", // TODO(Richo)
-								"MAX_SPEED = 20", // TODO(Richo)
-								"",
-								"robot = Robot()",
-								"")
-				.concat(ctx.setups)
-				.concat("")
-				.concat(this.content.join(""))
-				.join("\n")
+		toString() {
+			return this.content.join("");
 		}
 	}
 
@@ -203,6 +260,7 @@ let BlocksToPy = (function () {
 		variable: function (block, ctx) {
 			let variableName = asIdentifier(XML.getChildNode(block, "variableName").innerText);
 			ctx.builder.append(variableName);
+			ctx.registerGlobal(variableName);
 		},
 		conditional_simple: function (block, ctx) {
 			ctx.builder.indent().append("if ");
@@ -431,16 +489,20 @@ let BlocksToPy = (function () {
 			ctx.builder.append(")");
 		},
 		set_variable: function (block, ctx) {
-			let name = asIdentifier(XML.getChildNode(block, "variableName").innerText);
-			ctx.builder.indent().append(name).append(" = ");
+			let variableName = asIdentifier(XML.getChildNode(block, "variableName").innerText);
+			ctx.builder.indent().append(variableName).append(" = ");
 			generateCodeForValue(block, ctx, "value");
 			ctx.builder.newline();
+
+			ctx.registerGlobal(variableName);
 		},
 		increment_variable: function (block, ctx) {
-			let name = asIdentifier(XML.getChildNode(block, "variableName").innerText);
-			ctx.builder.indent().append(name).append(" = ").append(name).append(" + ");
+			let variableName = asIdentifier(XML.getChildNode(block, "variableName").innerText);
+			ctx.builder.indent().append(variableName).append(" = ").append(variableName).append(" + ");
 			generateCodeForValue(block, ctx, "value");
 			ctx.builder.newline();
+
+			ctx.registerGlobal(variableName);
 		},
 		number_random_int: function (block, ctx) {
 			ctx.builder.append("randint(");
@@ -768,9 +830,10 @@ let BlocksToPy = (function () {
 		generate: function (xml) {
 			let ctx = new Context(xml);
 
-			let blocks = Array.from(xml.childNodes).filter(isTopLevel);
+			let blocks = ctx.topLevelBlocks;
 			assertValidBlocks(blocks, ctx);
 
+			// NOTE(Richo): Loops should always be last
 			blocks.sort((a, b) => {
 				if (isLoop(b)) return -1;
 				if (isLoop(a)) return 1;
@@ -785,7 +848,7 @@ let BlocksToPy = (function () {
 				throw error("Se encontraron los siguientes errores:", ctx.errors);
 			}
 
-			return ctx.builder.generateCodeUsing(ctx);
+			return ctx.getGeneratedCode();
 		}
 	}
 })();
