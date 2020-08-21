@@ -947,6 +947,21 @@ let UziBlock = (function () {
         this.setHelpUrl("");
       }
     };
+
+    Blockly.Blocks['floor_getcolor'] = {
+      init: function() {
+        let msg = i18n.translate("leer color del piso");
+        let inputFields = {};
+
+        initBlock(this, msg, inputFields);
+
+        //this.setInputsInline(false);
+        this.setOutput(true, null);
+        this.setColour(0);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
   }
 
   function initVariableBlocks() {

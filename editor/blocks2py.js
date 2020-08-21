@@ -71,6 +71,10 @@ let BlocksToPy = (function () {
 			let sonarName = asIdentifier(XML.getChildNode(block, "sonarName").innerText);
 			ctx.builder.append(sonarName).append(".getValue()");
 		},
+		floor_getcolor: function (block, ctx) {
+			// TODO(Richo): Transform the color into a value from 0 (black) to 100 (white)
+			ctx.builder.append("colorPiso.getImage()");
+		},
 		forever: function (block, ctx) {
 			ctx.builder.indent().appendLine("while true:")
 				.incrementLevel(() => {
@@ -673,7 +677,7 @@ let BlocksToPy = (function () {
 				throw error("Se encontraron los siguientes errores:", ctx.errors);
 			}
 
-			return ["from controller import Robot, DistanceSensor, Motor"]
+			return ["from controller import Robot"]
 				.concat(Array.from(ctx.imports))
 				.concat("",
 								"TIME_STEP = 32", // TODO(Richo)
@@ -692,6 +696,9 @@ let BlocksToPy = (function () {
 								'',
 								'sensorDistanciaD = robot.getDistanceSensor("sensorDistanciaD")',
 								'sensorDistanciaD.enable(TIME_STEP)',
+								'',
+								'colorPiso = robot.getCamera("colorPiso")',
+								'colorPiso.enable(TIME_STEP)',
 								"",
 								ctx.builder.toString())
 				.join("\n");

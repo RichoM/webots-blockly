@@ -15,6 +15,7 @@
     <block type="sonar_getvalue">
       <field name="sonarName">sensorDistanciaI</field>
     </block>
+    <block type="floor_getcolor"></block>
   </category>
   <category name="Control" colour="#5b80a5">
     <block type="conditional_simple">
