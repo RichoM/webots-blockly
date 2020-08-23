@@ -14,7 +14,11 @@ class Output {
     temp.forEach(entry => this.appendEntry(entry));
   }
 
-  appendError(err) {
+  timestamp() {
+    this.info((new Date()).toLocaleString());
+  }
+
+  exception(err) {
     let text = err["summary"];
     if (text) {
       this.appendEntry({type: "error", text: text});
@@ -34,6 +38,15 @@ class Output {
     this.appendEntry({type: "info", text: ""});
   }
 
+  info(msg) {
+    this.appendEntry({type: "info", text: msg});
+  }
+  success(msg) {
+    this.appendEntry({type: "success", text: msg});
+  }
+  error(msg) {
+    this.appendEntry({type: "error", text: msg});
+  }
   appendEntry(entry) {
     // Remember the entry in case we need to update the panel (up to a fixed limit)
     if (this.history.length == 100) { this.history.shift(); }
@@ -90,17 +103,9 @@ class Output {
         .then(initializeCodePanel)
         .then(initializeAutorun)
         .then(initializeOutputPanel)
-        .then(initializeInternationalization)
-        .then(welcomeMessage);
+        .then(initializeInternationalization);
     },
   };
-
-  function welcomeMessage() {
-    output.appendEntry({type: "success", text: "--------------------------------"});
-    output.appendEntry({type: "success", text: "Bienvenido a webots-blockly!"});
-    output.appendEntry({type: "success", text: "--------------------------------"});
-    output.newline();
-  }
 
   function loadDefaultLayoutConfig() {
     return ajax.GET("default-layout.json")
@@ -428,8 +433,16 @@ class Output {
       if (codeEditor.getValue() !== src) {
         codeEditor.setValue(src, 1);
       }
+
+      output.clear();
+      output.timestamp();
+      output.newline();
+      output.success("Compilación exitosa!");
     } catch (err) {
-      output.appendError(err);
+      output.clear();
+      output.timestamp();
+      output.newline();
+      output.exception(err);
     }
 	}
 
