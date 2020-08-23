@@ -197,7 +197,8 @@ let BlocksToPy = (function () {
 		}
 	}
 
-	let invalidSelectors = new Set(["wait"]);
+	let pythonKeywords = ['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield'];
+	let invalidSelectors = new Set(pythonKeywords.concat(["wait"]));
 	let topLevelBlocks = ["simulator_setup", "simulator_loop",
 												"proc_definition_0args", "proc_definition_1args",
 												"proc_definition_2args", "proc_definition_3args",
