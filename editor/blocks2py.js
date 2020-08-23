@@ -499,6 +499,18 @@ let BlocksToPy = (function () {
 										"    while (robot.getTime() - begin) < duration:",
 										"        robot.step(TIME_STEP)"]);
 		},
+		elapsed_time: function (block, ctx) {
+			let unit = XML.getChildNode(block, "unit").innerText;
+			if (unit == "ms") {
+				ctx.builder.append("(robot.getTime() * 1000)");
+			} else if (unit == "s") {
+				ctx.builder.append("robot.getTime()");
+			} else if (unit == "m") {
+				ctx.builder.append("(robot.getTime() / 60)");
+			} else {
+				throw "Unidad desconocida: '" + unit + "'";
+			}
+		},
 		number_modulo: function (block, ctx) {
 			ctx.builder.append("(");
 			generateCodeForValue(block, ctx, "dividend");
