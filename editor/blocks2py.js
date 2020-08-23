@@ -213,6 +213,7 @@ let BlocksToPy = (function () {
 				.incrementLevel(() => {
 					generateCodeForStatements(block, ctx, "statements");
 				});
+			ctx.builder.newline();
 		},
 		motor_setvelocity: function (block, ctx) {
 			let motorName = asIdentifier(XML.getChildNode(block, "motorName").innerText);
@@ -365,7 +366,6 @@ let BlocksToPy = (function () {
 			}
 		},
 		number_operation: function (block, ctx) {
-
 			let type = XML.getChildNode(block, "operator").innerText;
 			let valid = ["sqrt", "abs", "negate", "ln", "log10", "exp", "pow10"];
 			if (!valid.includes(type)) {
@@ -753,7 +753,7 @@ let BlocksToPy = (function () {
 			generateCodeFor(valueBlock, ctx);
 		} catch (err) {
 			ctx.registerError(valueBlock, err);
-			ctx.builder.append("*ERROR*");
+			ctx.builder.append("None");
 			return undefined;
 		}
 	}
@@ -768,7 +768,6 @@ let BlocksToPy = (function () {
 					generateCodeFor(stmt, ctx);
 				} catch (err) {
 					ctx.registerError(stmt, err);
-					ctx.builder.indent().appendLine("*ERROR*");
 				}
 			});
 		}
