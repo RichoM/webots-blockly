@@ -50,7 +50,7 @@ let BlocksToPy = (function () {
 			// SETUPS
 			{
 				if (this.setups.length > 0) {
-						sections.push(this.setups.join("\n"));
+						sections.push(this.setups.join("\n\n"));
 						sections.push("");
 				}
 			}
@@ -76,7 +76,8 @@ let BlocksToPy = (function () {
 		registerError(block, msg) {
 			this.errors.push({block: block.getAttribute("id"), msg: msg});
 		}
-		addSetup(setup) {
+		addSetup(setups) {
+			let setup = setups.join("\n");
 			if (this.setups.includes(setup)) return;
 			this.setups.push(setup);
 		}
@@ -220,20 +221,20 @@ let BlocksToPy = (function () {
 			ctx.builder.indent().append(motorName).append(".setVelocity(");
 			generateCodeForValue(block, ctx, "motorSpeed");
 			ctx.builder.appendLine(" / 100 * MAX_SPEED)");
-			ctx.addSetup(motorName + ' = robot.getMotor("' + motorName + '")');
-			ctx.addSetup(motorName + '.setPosition(float("inf"))')
+			ctx.addSetup([motorName + ' = robot.getMotor("' + motorName + '")',
+										motorName + '.setPosition(float("inf"))']);
 		},
 		sonar_getvalue: function (block, ctx) {
 			let sonarName = asIdentifier(XML.getChildNode(block, "sonarName").innerText);
 			ctx.builder.append(sonarName).append(".getValue()");
-			ctx.addSetup(sonarName + ' = robot.getDistanceSensor("' + sonarName + '")');
-			ctx.addSetup(sonarName + '.enable(TIME_STEP)');
+			ctx.addSetup([sonarName + ' = robot.getDistanceSensor("' + sonarName + '")',
+										sonarName + '.enable(TIME_STEP)']);
 		},
 		floor_getcolor: function (block, ctx) {
 			// TODO(Richo): Transform the color into a value from 0 (black) to 100 (white)
 			ctx.builder.append("colorPiso.getImage()");
-			ctx.addSetup('colorPiso = robot.getCamera("colorPiso")');
-			ctx.addSetup('colorPiso.enable(TIME_STEP)');
+			ctx.addSetup(['colorPiso = robot.getCamera("colorPiso")',
+										'colorPiso.enable(TIME_STEP)']);
 		},
 		forever: function (block, ctx) {
 			ctx.builder.indent().appendLine("while true:")
