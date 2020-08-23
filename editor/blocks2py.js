@@ -749,20 +749,19 @@ let BlocksToPy = (function () {
 	};
 
 	function asIdentifier(str) {
+		// Replace invalid symbols with '_'
 		let identifier = str.replace(/[^A-Za-z0-9_]/g, '_');
+
+		// Add '_' prefix if first character is a digit
 		if (identifier.match(/^\d/)) {
 			identifier = "_" + identifier;
 		}
-		// Avoid collisions with primitive functions
-		{
-			let i = 1;
-			let temp = identifier;
-			while (invalidSelectors.has(temp)) {
-				temp = identifier + "_" + i.toString();
-				i++;
-			}
-			identifier = temp;
+
+		// Avoid collisions with invalid selectors
+		while (invalidSelectors.has(identifier)) {
+			identifier += "_";
 		}
+		
 		return identifier;
 	}
 
