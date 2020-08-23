@@ -41,7 +41,7 @@ let BlocksToPy = (function () {
 			{
 				sections.push(["",
 											 "TIME_STEP = 32",
-											 "MAX_SPEED = 20", // TODO(Richo)
+											 "MAX_SPEED = 20",
 											 "",
 											 "robot = Robot()"].join("\n"));
 				sections.push("");
@@ -198,7 +198,7 @@ let BlocksToPy = (function () {
 	}
 
 	let pythonKeywords = ['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield'];
-	let invalidSelectors = new Set(pythonKeywords.concat(["wait"]));
+	let invalidSelectors = new Set(pythonKeywords.concat(["wait", "floorColor"]));
 	let topLevelBlocks = ["simulator_setup", "simulator_loop",
 												"proc_definition_0args", "proc_definition_1args",
 												"proc_definition_2args", "proc_definition_3args",
@@ -233,10 +233,15 @@ let BlocksToPy = (function () {
 										sonarName + '.enable(TIME_STEP)']);
 		},
 		floor_getcolor: function (block, ctx) {
-			// TODO(Richo): Transform the color into a value from 0 (black) to 100 (white)
-			ctx.builder.append("colorPiso.getImage()");
+			ctx.builder.append("floorColor()");
+
 			ctx.addSetup(['colorPiso = robot.getCamera("colorPiso")',
 										'colorPiso.enable(TIME_STEP)']);
+			ctx.addSetup(["def floorColor():",
+										"    min = 4281216556",
+										"    max = 4292861922",
+										'    val = int.from_bytes(colorPiso.getImage(), "little")',
+										"    return int((val - min) * 100 / (max - min))"]);
 		},
 		forever: function (block, ctx) {
 			ctx.builder.indent().appendLine("while true:")
@@ -761,7 +766,7 @@ let BlocksToPy = (function () {
 		while (invalidSelectors.has(identifier)) {
 			identifier += "_";
 		}
-		
+
 		return identifier;
 	}
 
