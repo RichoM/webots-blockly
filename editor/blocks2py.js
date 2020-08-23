@@ -60,7 +60,7 @@ let BlocksToPy = (function () {
 				let globals = this.undefinedGlobals;
 				if (globals.length > 0) {
 					sections.push(globals.map(g => g + " = 0").join("\n"));
-					//sections.push("");
+					sections.push("");
 				}
 			}
 
