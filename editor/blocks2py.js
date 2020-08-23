@@ -733,7 +733,8 @@ let BlocksToPy = (function () {
 		let type = block.getAttribute("type");
 		let func = dispatchTable[type];
 		if (func == undefined) {
-			throw "CODEGEN ERROR: Type not found '" + type + "'";
+			ctx.registerError(block, "CODEGEN ERROR: Type not found '" + type + "'");
+			return undefined;
 		}
 		try {
 			ctx.path.push(block);
