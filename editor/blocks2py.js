@@ -811,14 +811,9 @@ let BlocksToPy = (function () {
 	}
 
 	function assertValidBlocks(blocks, ctx) {
-		let setupBlocks = blocks.filter(isSetup);
-		for (let i = 1; i < setupBlocks.length; i++) {
-			ctx.registerError(setupBlocks[i], 'Más de un bloque "setup"');
-		}
-
 		let loopBlocks = blocks.filter(isLoop);
 		for (let i = 1; i < loopBlocks.length; i++) {
-			ctx.registerError(loopBlocks[i], 'Más de un bloque "loop"');
+			ctx.registerError(loopBlocks[i], 'Más de un bloque "loop". El segundo bloque no se ejecutará.');
 		}
 	}
 
