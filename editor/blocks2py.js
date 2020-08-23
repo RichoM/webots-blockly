@@ -749,7 +749,10 @@ let BlocksToPy = (function () {
 	};
 
 	function asIdentifier(str) {
-		let identifier = str.replace(/ /g, '_');
+		let identifier = str.replace(/[^A-Za-z0-9_]/g, '_');
+		if (identifier.match(/^\d/)) {
+			identifier = "_" + identifier;
+		}
 		// Avoid collisions with primitive functions
 		{
 			let i = 1;
