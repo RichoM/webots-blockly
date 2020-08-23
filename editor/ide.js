@@ -103,7 +103,8 @@ class Output {
         .then(initializeCodePanel)
         .then(initializeAutorun)
         .then(initializeOutputPanel)
-        .then(initializeInternationalization);
+        .then(initializeInternationalization)
+        .then(() => i18n.currentLocale("es"));
     },
   };
 
