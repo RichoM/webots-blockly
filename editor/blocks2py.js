@@ -482,6 +482,23 @@ let BlocksToPy = (function () {
 			ctx.builder.appendLine(":")
 				.incrementLevel(() => ctx.builder.indent().appendLine("pass"));
 		},
+		delay: function (block, ctx) {
+			let unit = XML.getChildNode(block, "unit").innerText;
+			ctx.builder.indent().append("wait(");
+			generateCodeForValue(block, ctx, "time");
+			if (unit == "ms") {
+				ctx.builder.append(" / 1000");
+			} else if (unit == "m") {
+				ctx.builder.append(" * 60");
+			}
+			ctx.builder.appendLine(")");
+
+			ctx.addSetup(["def wait(duration):",
+										"    global TIME_STEP",
+										"    begin = robot.getTime()",
+										"    while (robot.getTime() - begin) < duration:",
+										"        robot.step(TIME_STEP)"]);
+		},
 		number_modulo: function (block, ctx) {
 			ctx.builder.append("(");
 			generateCodeForValue(block, ctx, "dividend");
