@@ -1,3 +1,71 @@
+class Output {
+  constructor() {
+    this.history = [];
+    i18n.on("change", () => this.refresh());
+  }
+
+  clear() {
+    $("#output-console").html("");
+    this.history = [];
+  }
+  refresh() {
+    let temp = this.history;
+    this.clear();
+    temp.forEach(entry => this.appendEntry(entry));
+  }
+
+  appendError(err) {
+    let text = err["summary"];
+    if (text) {
+      this.appendEntry({type: "error", text: text});
+      let errors = err["errors"];
+      if (errors) {
+        for (let i = 0; i < errors.length; i++) {
+          this.appendEntry({type: "error", text: "[" + (i + 1) + "] " + errors[i]["msg"]});
+        }
+      }
+    } else {
+      this.appendEntry({type: "error", text: err.toString()});
+    }
+    this.newline();
+  }
+
+  newline() {
+    this.appendEntry({type: "info", text: ""});
+  }
+
+  appendEntry(entry) {
+    // Remember the entry in case we need to update the panel (up to a fixed limit)
+    if (this.history.length == 100) { this.history.shift(); }
+    this.history.push(entry);
+
+    // Translate and format the message
+    let type = entry.type || "info";
+    let args = entry.args || [];
+    let regex = /%(\d+)/g;
+    let text = i18n.translate(entry.text).replace(regex, function (m, i) {
+      let arg = args[parseInt(i) - 1];
+      return arg || m;
+    });
+
+    // Append element
+    let css = {
+      info: "text-dark",
+      success: "text-success",
+      error: "text-danger",
+      warning: "text-warning"
+    };
+    let el = $("<div>").addClass("small").addClass(css[type]);
+    if (text) { el.text(text); }
+    else { el.html("&nbsp;"); }
+    $("#output-console").append(el);
+
+    // Scroll to bottom
+    let panel = $("#output-panel").get(0);
+    panel.scrollTop = panel.scrollHeight - panel.clientHeight;
+  }
+}
+
 ﻿let IDE = (function () {
 
   let layout, defaultLayoutConfig;
@@ -5,7 +73,7 @@
   let autorunInterval, autorunNextTime;
   let lastProgram;
   let lastFileName;
-  let outputHistory = [];
+  let output;
 
   let userPorts = [];
 
@@ -28,10 +96,10 @@
   };
 
   function welcomeMessage() {
-    appendToOutput({type: "success", text: "--------------------------------"});
-    appendToOutput({type: "success", text: "Bienvenido a webots-blockly!"});
-    appendToOutput({type: "success", text: "--------------------------------"});
-    appendNewline();
+    output.appendEntry({type: "success", text: "--------------------------------"});
+    output.appendEntry({type: "success", text: "Bienvenido a webots-blockly!"});
+    output.appendEntry({type: "success", text: "--------------------------------"});
+    output.newline();
   }
 
   function loadDefaultLayoutConfig() {
@@ -81,10 +149,10 @@
   function initializeBlocksPanel() {
     return UziBlock.init()
       .then(function () {
-          UziBlock.on("change", function () {
-            saveToLocalStorage();
-            scheduleAutorun(false);
-          });
+        UziBlock.on("change", function () {
+          saveToLocalStorage();
+          scheduleAutorun(false);
+        });
       })
       .then(restoreFromLocalStorage);
   }
@@ -235,12 +303,7 @@
   }
 
   function initializeOutputPanel() {
-    i18n.on("change", function () {
-      $("#output-console").html("");
-      let temp = outputHistory;
-      outputHistory = [];
-      temp.forEach(appendToOutput);
-    })
+    output = new Output();
   }
 
   function initializeAutorun() {
@@ -288,57 +351,6 @@
       if (layout.config.content.length > 0) return;
       $("#broken-layout-modal").modal("show");
     }, 1000);
-  }
-
-  function appendError(err) {
-    let text = err["summary"];
-    if (text) {
-      appendToOutput({type: "error", text: text});
-      let errors = err["errors"];
-      if (errors) {
-        for (let i = 0; i < errors.length; i++) {
-          appendToOutput({type: "error", text: "[" + (i + 1) + "] " + errors[i]["msg"]});
-        }
-      }
-    } else {
-      appendToOutput({type: "error", text: err.toString()});
-    }
-    appendNewline();
-  }
-
-  function appendNewline() {
-    appendToOutput({type: "info", text: ""});
-  }
-
-  function appendToOutput(entry) {
-    // Remember the entry in case we need to update the panel (up to a fixed limit)
-    if (outputHistory.length == 100) { outputHistory.shift(); }
-    outputHistory.push(entry);
-
-    // Translate and format the message
-    let type = entry.type || "info";
-    let args = entry.args || [];
-    let regex = /%(\d+)/g;
-    let text = i18n.translate(entry.text).replace(regex, function (m, i) {
-      let arg = args[parseInt(i) - 1];
-      return arg || m;
-    });
-
-    // Append element
-    let css = {
-      info: "text-dark",
-      success: "text-success",
-      error: "text-danger",
-      warning: "text-warning"
-    };
-    let el = $("<div>").addClass("small").addClass(css[type]);
-    if (text) { el.text(text); }
-    else { el.html("&nbsp;"); }
-    $("#output-console").append(el);
-
-    // Scroll to bottom
-    let panel = $("#output-panel").get(0);
-    panel.scrollTop = panel.scrollHeight - panel.clientHeight;
   }
 
   function resizeBlockly() {
@@ -417,7 +429,7 @@
         codeEditor.setValue(src, 1);
       }
     } catch (err) {
-      appendError(err);
+      output.appendError(err);
     }
 	}
 
