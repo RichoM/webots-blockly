@@ -68,6 +68,17 @@
         </shadow>
       </value>
     </block>
+    <block type="delay">
+      <field name="unit">ms</field>
+      <value name="time">
+        <shadow type="number">
+          <field name="value">1000</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="elapsed_time">
+      <field name="unit">ms</field>	
+    </block>
 
     <!--
     <block type="forever"></block>
