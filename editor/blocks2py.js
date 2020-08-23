@@ -733,8 +733,7 @@ let BlocksToPy = (function () {
 		let type = block.getAttribute("type");
 		let func = dispatchTable[type];
 		if (func == undefined) {
-			ctx.registerError(block, "CODEGEN ERROR: Type not found '" + type + "'");
-			return undefined;
+			throw "CODEGEN ERROR: Type not found '" + type + "'";
 		}
 		try {
 			ctx.path.push(block);
@@ -754,6 +753,7 @@ let BlocksToPy = (function () {
 			generateCodeFor(valueBlock, ctx);
 		} catch (err) {
 			ctx.registerError(valueBlock, err);
+			ctx.builder.append("*ERROR*");
 			return undefined;
 		}
 	}
@@ -767,7 +767,8 @@ let BlocksToPy = (function () {
 				try {
 					generateCodeFor(stmt, ctx);
 				} catch (err) {
-					ctx.registerError(block, err);
+					ctx.registerError(stmt, err);
+					ctx.builder.indent().appendLine("*ERROR*");
 				}
 			});
 		}
@@ -822,9 +823,9 @@ let BlocksToPy = (function () {
 		}
 	}
 
-	function error(msg, errors) {
+	function error(msg, errors, code) {
 		errors = errors || [];
-		return {summary: msg, errors: errors};
+		return {summary: msg, errors: errors, code: code};
 	}
 
 	return {
@@ -846,7 +847,7 @@ let BlocksToPy = (function () {
 			});
 
 			if (ctx.errors.length > 0) {
-				throw error("Se encontraron los siguientes errores:", ctx.errors);
+				throw error("Se encontraron los siguientes errores:", ctx.errors, ctx.getGeneratedCode());
 			}
 
 			return ctx.getGeneratedCode();

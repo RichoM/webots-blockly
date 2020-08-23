@@ -425,25 +425,31 @@ class Output {
 		if (currentTime < autorunNextTime) return;
     autorunNextTime = undefined;
 
+    let src = "";
+    
     try {
   		let currentProgram = UziBlock.getGeneratedCode();
   		if (currentProgram === lastProgram) return;
       lastProgram = currentProgram;
 
-      let src = currentProgram;
-      if (codeEditor.getValue() !== src) {
-        codeEditor.setValue(src, 1);
-      }
+      src = currentProgram;
 
       output.clear();
       output.timestamp();
       output.newline();
       output.success("Compilación exitosa!");
     } catch (err) {
+
+      src = err.code || "";
+
       output.clear();
       output.timestamp();
       output.newline();
       output.exception(err);
+    }
+
+    if (codeEditor.getValue() !== src) {
+      codeEditor.setValue(src, 1);
     }
 	}
 
