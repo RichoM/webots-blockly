@@ -836,8 +836,8 @@ let BlocksToPy = (function () {
 
 			// NOTE(Richo): Loops should always be last
 			blocks.sort((a, b) => {
-				if (isLoop(b)) return -1;
-				if (isLoop(a)) return 1;
+				if (isLoop(b) && !isLoop(a)) return -1;
+				if (isLoop(a) && !isLoop(b)) return 1;
 				return 0;
 			});
 
