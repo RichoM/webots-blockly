@@ -197,6 +197,7 @@ let BlocksToPy = (function () {
 		}
 	}
 
+	let invalidSelectors = new Set(["wait"]);
 	let topLevelBlocks = ["simulator_setup", "simulator_loop",
 												"proc_definition_0args", "proc_definition_1args",
 												"proc_definition_2args", "proc_definition_3args",
@@ -747,7 +748,18 @@ let BlocksToPy = (function () {
 	};
 
 	function asIdentifier(str) {
-		return str.replace(/ /g, '_');
+		let identifier = str.replace(/ /g, '_');
+		// Avoid collisions with primitive functions
+		{
+			let i = 1;
+			let temp = identifier;
+			while (invalidSelectors.has(temp)) {
+				temp = identifier + "_" + i.toString();
+				i++;
+			}
+			identifier = temp;
+		}
+		return identifier;
 	}
 
 	function handleGlobalsInsideScope(block, ctx) {
