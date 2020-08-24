@@ -487,7 +487,7 @@ let BlocksToPy = (function () {
 			if (negated) { ctx.builder.append("not "); }
 			generateCodeForValue(block, ctx, "condition");
 			ctx.builder.appendLine(":")
-				.incrementLevel(() => ctx.builder.indent().appendLine("pass"));
+				.incrementLevel(() => ctx.builder.indent().appendLine("robot.step(TIME_STEP)"));
 		},
 		delay: function (block, ctx) {
 			let unit = XML.getChildNode(block, "unit").innerText;

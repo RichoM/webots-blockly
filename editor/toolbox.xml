@@ -77,12 +77,9 @@
       </value>
     </block>
     <block type="elapsed_time">
-      <field name="unit">ms</field>	
+      <field name="unit">ms</field>
     </block>
-
-    <!--
-    <block type="forever"></block>
-    <block type="repeat">
+    <block type="wait">
       <field name="negate">false</field>
       <value name="condition">
         <shadow type="boolean">
@@ -90,7 +87,10 @@
         </shadow>
       </value>
     </block>
-    <block type="wait">
+
+    <!--
+    <block type="forever"></block>
+    <block type="repeat">
       <field name="negate">false</field>
       <value name="condition">
         <shadow type="boolean">
