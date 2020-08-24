@@ -84,7 +84,6 @@ class Output {
   let layout, defaultLayoutConfig;
   let codeEditor;
   let autorunInterval, autorunNextTime;
-  let lastProgram;
   let lastFileName;
   let output;
 
@@ -157,7 +156,7 @@ class Output {
       .then(function () {
         UziBlock.on("change", function () {
           saveToLocalStorage();
-          scheduleAutorun(false);
+          scheduleAutorun();
         });
       })
       .then(restoreFromLocalStorage);
@@ -404,10 +403,9 @@ class Output {
     }
   }
 
-	function scheduleAutorun(forced) {
+	function scheduleAutorun() {
 		let currentTime = +new Date();
 		autorunNextTime = currentTime + 150;
-    if (forced) { lastProgram = null; }
 	}
 
   function success() {
@@ -425,26 +423,16 @@ class Output {
 		if (currentTime < autorunNextTime) return;
     autorunNextTime = undefined;
 
+    output.clear();
+    output.timestamp();
+    output.newline();
+
     let src = "";
-    
     try {
-  		let currentProgram = UziBlock.getGeneratedCode();
-  		if (currentProgram === lastProgram) return;
-      lastProgram = currentProgram;
-
-      src = currentProgram;
-
-      output.clear();
-      output.timestamp();
-      output.newline();
+  		src = UziBlock.getGeneratedCode();
       output.success("Compilación exitosa!");
     } catch (err) {
-
       src = err.code || "";
-
-      output.clear();
-      output.timestamp();
-      output.newline();
       output.exception(err);
     }
 
