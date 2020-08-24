@@ -501,7 +501,6 @@ let BlocksToPy = (function () {
 			ctx.builder.appendLine(")");
 
 			ctx.addSetup(["def wait(duration):",
-										"    global TIME_STEP",
 										"    begin = robot.getTime()",
 										"    while (robot.getTime() - begin) < duration:",
 										"        robot.step(TIME_STEP)"]);
