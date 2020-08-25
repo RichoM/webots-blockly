@@ -27,7 +27,7 @@ let BlocksToPy = (function () {
 
 		getGeneratedCode() {
 			let sections = [];
-			sections.push("from controller import Robot");
+			sections.push("from RobotRL import RobotRL");
 
 			// IMPORTS
 			{
@@ -40,10 +40,7 @@ let BlocksToPy = (function () {
 			// CONSTANTS
 			{
 				sections.push(["",
-											 "TIME_STEP = 32",
-											 "MAX_SPEED = 20",
-											 "",
-											 "robot = Robot()"].join("\n"));
+											 'robot = RobotRL("Paulina")'].join("\n"));
 				sections.push("");
 			}
 
@@ -198,7 +195,7 @@ let BlocksToPy = (function () {
 	}
 
 	let pythonKeywords = ['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield'];
-	let invalidSelectors = new Set(pythonKeywords.concat(["wait", "floorColor"]));
+	let invalidSelectors = new Set(pythonKeywords.concat(["robot"]));
 	let topLevelBlocks = ["simulator_setup", "simulator_loop",
 												"proc_definition_0args", "proc_definition_1args",
 												"proc_definition_2args", "proc_definition_3args",
@@ -212,7 +209,7 @@ let BlocksToPy = (function () {
 		},
 		simulator_loop: function (block, ctx) {
 			ctx.builder.indent()
-				.appendLine("while robot.step(TIME_STEP) != -1:")
+				.appendLine("while robot.step():")
 				.incrementLevel(() => {
 					generateCodeForStatements(block, ctx, "statements");
 				});
@@ -220,28 +217,28 @@ let BlocksToPy = (function () {
 		},
 		motor_setvelocity: function (block, ctx) {
 			let motorName = asIdentifier(XML.getChildNode(block, "motorName").innerText);
-			ctx.builder.indent().append(motorName).append(".setVelocity(");
+			if (motorName == "motorIzquierdo") {
+				ctx.builder.indent().append("robot.setVI(");
+			} else if (motorName == "motorDerecho") {
+				ctx.builder.indent().append("robot.setVD(");
+			} else {
+				throw "Nombre de motor inválido '" + motorName + "'";
+			}
 			generateCodeForValue(block, ctx, "motorSpeed");
-			ctx.builder.appendLine(" / 100 * MAX_SPEED)");
-			ctx.addSetup([motorName + ' = robot.getMotor("' + motorName + '")',
-										motorName + '.setPosition(float("inf"))']);
+			ctx.builder.appendLine(" / 100)");
 		},
 		sonar_getvalue: function (block, ctx) {
 			let sonarName = asIdentifier(XML.getChildNode(block, "sonarName").innerText);
-			ctx.builder.append(sonarName).append(".getValue()");
-			ctx.addSetup([sonarName + ' = robot.getDistanceSensor("' + sonarName + '")',
-										sonarName + '.enable(TIME_STEP)']);
+			if (sonarName == "sensorDistanciaI") {
+				ctx.builder.append("robot.getDI()");
+			} else if (sonarName == "sensorDistanciaD") {
+				ctx.builder.append("robot.getDD()");
+			} else {
+				throw "Nombre de sensor inválido '" + sonarName + "'";
+			}
 		},
 		floor_getcolor: function (block, ctx) {
-			ctx.builder.append("floorColor()");
-
-			ctx.addSetup(['colorPiso = robot.getCamera("colorPiso")',
-										'colorPiso.enable(TIME_STEP)']);
-			ctx.addSetup(["def floorColor():",
-										"    min = 4281216556",
-										"    max = 4292861922",
-										'    val = int.from_bytes(colorPiso.getImage(), "little")',
-										"    return int((val - min) * 100 / (max - min))"]);
+			ctx.builder.append("robot.getColorPiso()");
 		},
 		forever: function (block, ctx) {
 			ctx.builder.indent().appendLine("while true:")
@@ -487,11 +484,11 @@ let BlocksToPy = (function () {
 			if (negated) { ctx.builder.append("not "); }
 			generateCodeForValue(block, ctx, "condition");
 			ctx.builder.appendLine(":")
-				.incrementLevel(() => ctx.builder.indent().appendLine("robot.step(TIME_STEP)"));
+				.incrementLevel(() => ctx.builder.indent().appendLine("robot.step()"));
 		},
 		delay: function (block, ctx) {
 			let unit = XML.getChildNode(block, "unit").innerText;
-			ctx.builder.indent().append("wait(");
+			ctx.builder.indent().append("robot.esperar(");
 			generateCodeForValue(block, ctx, "time");
 			if (unit == "ms") {
 				ctx.builder.append(" / 1000");
@@ -499,20 +496,15 @@ let BlocksToPy = (function () {
 				ctx.builder.append(" * 60");
 			}
 			ctx.builder.appendLine(")");
-
-			ctx.addSetup(["def wait(duration):",
-										"    begin = robot.getTime()",
-										"    while (robot.getTime() - begin) < duration:",
-										"        robot.step(TIME_STEP)"]);
 		},
 		elapsed_time: function (block, ctx) {
 			let unit = XML.getChildNode(block, "unit").innerText;
 			if (unit == "ms") {
-				ctx.builder.append("(robot.getTime() * 1000)");
+				ctx.builder.append("(robot.tiempoActual() * 1000)");
 			} else if (unit == "s") {
-				ctx.builder.append("robot.getTime()");
+				ctx.builder.append("robot.tiempoActual()");
 			} else if (unit == "m") {
-				ctx.builder.append("(robot.getTime() / 60)");
+				ctx.builder.append("(robot.tiempoActual() / 60)");
 			} else {
 				throw "Unidad desconocida: '" + unit + "'";
 			}
