@@ -8,6 +8,11 @@
     background-color: white;
   }
 
+  body {
+    background: rgb(3,0,56);
+    background: linear-gradient(0deg, rgba(3,0,56,0.15029761904761907) 85%, rgba(255,255,255,0) 100%);
+  }
+
   h1, h2 {
     font-family: 'ChargerRegular';
     font-weight: normal;
@@ -113,4 +118,10 @@
 
   .allCapsMode {
     font-variant: small-caps;
+  }
+
+
+  .lm_goldenlayout {
+    /* HACK(Richo): This removes the background image that comes with the light-theme */
+    background: inherit !important;
   }
