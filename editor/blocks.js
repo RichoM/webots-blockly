@@ -1170,7 +1170,7 @@ let UziBlock = (function () {
           "arg1": () => this.appendValueInput("arg0")
                             .setCheck(null)
                             .setAlign(Blockly.ALIGN_RIGHT)
-                            .appendField("arg0")
+                            .appendField(new Blockly.FieldLabel(getArgumentName(getLastProcedureName(1), "arg0"), "arg0"))
         };
 
         initBlock(this, msg, inputFields);
@@ -1188,24 +1188,24 @@ let UziBlock = (function () {
         let msg = i18n.translate("execute procedure %name with %arg1 and %arg2");
         let inputFields = {
           "name": () => this.appendDummyInput()
-            .appendField(new Blockly.FieldDropdown(() => currentProceduresForDropdown(2)), "procName"),
+                            .appendField(new Blockly.FieldDropdown(() => currentProceduresForDropdown(2)), "procName"),
           "arg1": () => this.appendValueInput("arg0")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg0"),
+                            .setCheck(null)
+                            .setAlign(Blockly.ALIGN_RIGHT)
+                            .appendField(new Blockly.FieldLabel(getArgumentName(getLastProcedureName(2), "arg0"), "arg0")),
           "arg2": () => this.appendValueInput("arg1")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg1")
-	};
+                            .setCheck(null)
+                            .setAlign(Blockly.ALIGN_RIGHT)
+                            .appendField(new Blockly.FieldLabel(getArgumentName(getLastProcedureName(2), "arg1"), "arg1"))
+        };
 
         initBlock(this, msg, inputFields);
 
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
         this.setColour(285);
-     this.setTooltip("");
-     this.setHelpUrl("");
+        this.setTooltip("");
+        this.setHelpUrl("");
       }
     };
 
@@ -1214,19 +1214,19 @@ let UziBlock = (function () {
         let msg = i18n.translate("execute procedure %name with %arg1, %arg2 and %arg3");
         let inputFields = {
           "name": () => this.appendDummyInput()
-            .appendField(new Blockly.FieldDropdown(() => currentProceduresForDropdown(3)), "procName"),
+                            .appendField(new Blockly.FieldDropdown(() => currentProceduresForDropdown(3)), "procName"),
           "arg1": () => this.appendValueInput("arg0")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg0"),
-        "arg2": () => this.appendValueInput("arg1")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg1"),
-        "arg3": () => this.appendValueInput("arg2")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg2")
+                            .setCheck(null)
+                            .setAlign(Blockly.ALIGN_RIGHT)
+                            .appendField(new Blockly.FieldLabel(getArgumentName(getLastProcedureName(3), "arg0"), "arg0")),
+          "arg2": () => this.appendValueInput("arg1")
+                            .setCheck(null)
+                            .setAlign(Blockly.ALIGN_RIGHT)
+                            .appendField(new Blockly.FieldLabel(getArgumentName(getLastProcedureName(3), "arg1"), "arg1")),
+          "arg3": () => this.appendValueInput("arg2")
+                            .setCheck(null)
+                            .setAlign(Blockly.ALIGN_RIGHT)
+                            .appendField(new Blockly.FieldLabel(getArgumentName(getLastProcedureName(3), "arg2"), "arg2"))
         };
 
         initBlock(this, msg, inputFields);
@@ -1357,7 +1357,7 @@ let UziBlock = (function () {
         let inputFields = {
           "name": () => this.appendDummyInput()
             .appendField(new Blockly.FieldDropdown(() => currentFunctionsForDropdown(0)), "funcName")
-	};
+        };
 
         initBlock(this, msg, inputFields);
 
@@ -1375,9 +1375,9 @@ let UziBlock = (function () {
           "name": () => this.appendDummyInput()
             .appendField(new Blockly.FieldDropdown(() => currentFunctionsForDropdown(1)), "funcName"),
           "arg1": () => this.appendValueInput("arg0")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg0")
+                      .setCheck(null)
+                      .setAlign(Blockly.ALIGN_RIGHT)
+                      .appendField(new Blockly.FieldLabel(getArgumentName(getLastFunctionName(1), "arg0"), "arg0"))
         };
 
         initBlock(this, msg, inputFields);
@@ -1396,13 +1396,13 @@ let UziBlock = (function () {
           "name": () => this.appendDummyInput()
             .appendField(new Blockly.FieldDropdown(() => currentFunctionsForDropdown(2)), "funcName"),
           "arg1": () => this.appendValueInput("arg0")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg0"),
+                      .setCheck(null)
+                      .setAlign(Blockly.ALIGN_RIGHT)
+                      .appendField(new Blockly.FieldLabel(getArgumentName(getLastFunctionName(2), "arg0"), "arg0")),
           "arg2": () => this.appendValueInput("arg1")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg1")
+                      .setCheck(null)
+                      .setAlign(Blockly.ALIGN_RIGHT)
+                      .appendField(new Blockly.FieldLabel(getArgumentName(getLastFunctionName(2), "arg1"), "arg1")),
 	};
 
         initBlock(this, msg, inputFields);
@@ -1422,17 +1422,17 @@ let UziBlock = (function () {
             .appendField(i18n.translate("evaluate"))
             .appendField(new Blockly.FieldDropdown(() => currentFunctionsForDropdown(3)), "funcName"),
           "arg1": () => this.appendValueInput("arg0")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg0"),
+                      .setCheck(null)
+                      .setAlign(Blockly.ALIGN_RIGHT)
+                      .appendField(new Blockly.FieldLabel(getArgumentName(getLastFunctionName(3), "arg0"), "arg0")),
           "arg2": () => this.appendValueInput("arg1")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg1"),
+                      .setCheck(null)
+                      .setAlign(Blockly.ALIGN_RIGHT)
+                      .appendField(new Blockly.FieldLabel(getArgumentName(getLastFunctionName(3), "arg1"), "arg1")),
           "arg3": () => this.appendValueInput("arg2")
-            .setCheck(null)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("arg2")
+                      .setCheck(null)
+                      .setAlign(Blockly.ALIGN_RIGHT)
+                      .appendField(new Blockly.FieldLabel(getArgumentName(getLastFunctionName(3), "arg2"), "arg2"))
 	};
 
         initBlock(this, msg, inputFields);
@@ -1516,6 +1516,20 @@ let UziBlock = (function () {
     }
   }
 
+
+  function getArgumentName(scriptName, name) {
+    let definitionBlock = workspace.getTopBlocks()
+                                   .find(b => b.getFieldValue("procName") == scriptName ||
+                                              b.getFieldValue("funcName") == scriptName);
+
+    if (definitionBlock) {
+      let fieldValue = definitionBlock.getFieldValue(name);
+      return fieldValue + ":";
+    } else {
+      return name + ":";
+    }
+  }
+
   function getCurrentScriptNames() {
     // NOTE(Richo): This function returns all the scripts (task, proc, and func)
     return getCurrentTaskNames()
@@ -1546,6 +1560,16 @@ let UziBlock = (function () {
     return workspace.getAllBlocks()
       .filter(b => interestingBlocks.includes(b.type))
       .map(b => b.getFieldValue("funcName"));
+  }
+
+  function getLastProcedureName(nargs) {
+    let names = getCurrentProcedureNames(nargs);
+    return names.length > 0 ? names[names.length - 1] : "default";
+  }
+
+  function getLastFunctionName(nargs) {
+    let names = getCurrentFunctionNames(nargs);
+    return names.length > 0 ? names[names.length - 1] : "default";
   }
 
   function getDefaultTaskName() {
@@ -1598,43 +1622,89 @@ let UziBlock = (function () {
   }
 
   function handleProcedureBlocks(evt) {
-    // NOTE(Richo): If a procedure is renamed we want to update all referencing blocks.
     let definitionBlocks = ["proc_definition_0args", "proc_definition_1args",
                             "proc_definition_2args", "proc_definition_3args"];
     let callBlocks = ["proc_call_0args", "proc_call_1args",
                       "proc_call_2args", "proc_call_3args"];
+
+    /*
+    NOTE(Richo): If a procedure is renamed we want to update all calling blocks.
+    And if a calling block is changed to refer to another procedure we need to update
+    its argument names.
+    */
     if (evt.type == Blockly.Events.CHANGE
        && evt.element == "field"
        && evt.name == "procName") {
       let block = workspace.getBlockById(evt.blockId);
       if (block != undefined && definitionBlocks.includes(block.type)) {
+        // A definition block has changed, we need to update all calling blocks
         let callBlock = callBlocks[definitionBlocks.indexOf(block.type)];
         workspace.getAllBlocks()
           .filter(b => callBlock == b.type)
           .map(b => b.getField("procName"))
           .filter(f => f != undefined && f.getValue() == evt.oldValue)
           .forEach(f => f.setValue(evt.newValue));
+      } else if (block != undefined && callBlocks.includes(block.type)) {
+        // A calling block has changed, we need to update its argument names
+        updateArgumentFields(block);
+      }
+    }
+
+    // NOTE(Richo): If an argument is renamed we want to update all the calling blocks.
+    if (evt.type == Blockly.Events.CHANGE
+       && evt.element == "field"
+       && evt.name && evt.name.startsWith("arg")) {
+      let block = workspace.getBlockById(evt.blockId);
+      if (block != undefined && definitionBlocks.includes(block.type)) {
+        let callBlock = callBlocks[definitionBlocks.indexOf(block.type)];
+        workspace.getAllBlocks()
+          .filter(b => callBlock == b.type &&
+                      block.getFieldValue("procName") == b.getFieldValue("procName"))
+          .forEach(updateArgumentFields);
       }
     }
   }
 
   function handleFunctionBlocks(evt) {
-    // NOTE(Richo): If a function is renamed we want to update all referencing blocks.
     let definitionBlocks = ["func_definition_0args", "func_definition_1args",
                             "func_definition_2args", "func_definition_3args"];
     let callBlocks = ["func_call_0args", "func_call_1args",
                       "func_call_2args", "func_call_3args"];
+
+    /*
+    NOTE(Richo): If a function is renamed we want to update all calling blocks.
+    And if a calling block is changed to refer to another function we need to update
+    its argument names.
+    */
     if (evt.type == Blockly.Events.CHANGE
        && evt.element == "field"
        && evt.name == "funcName") {
       let block = workspace.getBlockById(evt.blockId);
       if (block != undefined && definitionBlocks.includes(block.type)) {
+        // A definition block has changed, we need to update all calling blocks
         let callBlock = callBlocks[definitionBlocks.indexOf(block.type)];
         workspace.getAllBlocks()
           .filter(b => callBlock == b.type)
           .map(b => b.getField("funcName"))
           .filter(f => f != undefined && f.getValue() == evt.oldValue)
           .forEach(f => f.setValue(evt.newValue));
+      } else if (block != undefined && callBlocks.includes(block.type)) {
+        // A calling block has changed, we need to update its argument names
+        updateArgumentFields(block);
+      }
+    }
+
+    // NOTE(Richo): If an argument is renamed we want to update all the calling blocks.
+    if (evt.type == Blockly.Events.CHANGE
+       && evt.element == "field"
+       && evt.name && evt.name.startsWith("arg")) {
+      let block = workspace.getBlockById(evt.blockId);
+      if (block != undefined && definitionBlocks.includes(block.type)) {
+        let callBlock = callBlocks[definitionBlocks.indexOf(block.type)];
+        workspace.getAllBlocks()
+          .filter(b => callBlock == b.type &&
+                      block.getFieldValue("funcName") == b.getFieldValue("funcName"))
+          .forEach(updateArgumentFields);
       }
     }
   }
@@ -1801,6 +1871,24 @@ let UziBlock = (function () {
     });
   }
 
+  /*
+  NOTE(Richo): This function will update the names of the arguments in a calling
+  block according to the script being called. This is useful in several cases:
+  - When the workspace is loaded from XML (because the field labels are not serialized)
+  - When the proc/func being called changes (the user can change the dropdown value)
+  - When the argument is renamed in the definition block
+  */
+  function updateArgumentFields(callBlock) {
+    callBlock.inputList.filter(i => i.name.startsWith("arg"))
+      .forEach(i => {
+        let scriptName = callBlock.getFieldValue("procName") || callBlock.getFieldValue("funcName");
+        let inputName = i.name;
+        i.fieldRow
+          .filter(f => f.class_ == inputName)
+          .forEach(f => f.setValue(getArgumentName(scriptName, inputName)));
+      });
+  }
+
   function getGeneratedCode(){
     try {
       workspace.getAllBlocks().forEach(b => b.setWarningText(null));
@@ -1821,7 +1909,7 @@ let UziBlock = (function () {
   }
 
   function refreshWorkspace() {
-    fromXML(toXML());
+    fromXMLText(toXMLText());
   }
 
   function refreshToolbox() {
@@ -1829,12 +1917,40 @@ let UziBlock = (function () {
   }
 
   function toXML() {
-    return Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
+    return Blockly.Xml.workspaceToDom(workspace);
   }
 
-  function fromXML(xml) {
+  function toXMLText() {
+    return Blockly.Xml.domToText(toXML());
+  }
+
+  function fromXML(xml, cleanUp) {
     workspace.clear();
-    Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(xml), workspace);
+    Blockly.Xml.domToWorkspace(xml, workspace);
+
+    /*
+    HACK(Richo): After the workspace is loaded I run this code to make sure all the
+    proc/func calls have their argument labels set correctly.
+    I need to do this because Blockly.FieldLabel is not serialized, so the arg names
+    are not stored in the XML. And if the blocks are not initialized in the correct
+    order some call blocks can't find their definition block at init time.
+    Newer versions of Blockly have a Blockly.FieldLabelSerializable class that should
+    solve our problem but, unfortunately, upgrading Blockly is harder than it looks
+    because it breaks our code in a couple of places (particularly initBlock), so
+    for now this is valid workaround.
+    */
+    workspace.getAllBlocks()
+      .filter(b => b.type.includes("_call_"))
+      .forEach(updateArgumentFields);
+
+    if (cleanUp) {
+      workspace.cleanUp();
+      workspace.scrollCenter();
+    }
+  }
+
+  function fromXMLText(xml) {
+    fromXML(Blockly.Xml.textToDom(xml));
   }
 
   function getUsedVariables() {
@@ -1895,7 +2011,7 @@ let UziBlock = (function () {
     getDataForStorage: function () {
       return {
         version: version,
-        blocks: toXML(),
+        blocks: toXMLText(),
         variables: variables,
       };
     },
@@ -1903,7 +2019,7 @@ let UziBlock = (function () {
       // Check compatibility
       if (d.version != version) { return; }
 
-      fromXML(d.blocks);
+      fromXMLText(d.blocks);
       variables = d.variables || [];
     },
     getUsedVariables: getUsedVariables,
