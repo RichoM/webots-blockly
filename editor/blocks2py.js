@@ -27,20 +27,20 @@ let BlocksToPy = (function () {
 
 		getGeneratedCode() {
 			let sections = [];
+			sections.push("#RobotName: Paulina");
 			sections.push("from RobotRL import RobotRL");
 
 			// IMPORTS
 			{
 				if (this.imports.size > 0) {
 					sections.push(Array.from(this.imports).join("\n"));
-					sections.push("");
 				}
+				sections.push("");
 			}
 
 			// CONSTANTS
 			{
-				sections.push(["",
-											 'robot = RobotRL("Paulina")'].join("\n"));
+				sections.push(['robot = RobotRL()'].join("\n"));
 				sections.push("");
 			}
 
