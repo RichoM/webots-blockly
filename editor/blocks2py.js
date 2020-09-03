@@ -2,8 +2,9 @@
 let BlocksToPy = (function () {
 
 	class Context {
-		constructor(xml) {
+		constructor(xml, robotName) {
 			this.xml = xml;
+			this.robotName = robotName;
 			this.path = [xml];
 			this.builder = new Builder();
 			this.imports = new Set();
@@ -27,7 +28,7 @@ let BlocksToPy = (function () {
 
 		getGeneratedCode() {
 			let sections = [];
-			sections.push("#RobotName: Paulina");
+			sections.push("#RobotName: " + this.robotName);
 			sections.push("from RobotRL import RobotRL");
 
 			// IMPORTS
@@ -864,8 +865,8 @@ let BlocksToPy = (function () {
 	}
 
 	return {
-		generate: function (xml) {
-			let ctx = new Context(xml);
+		generate: function (xml, robotName) {
+			let ctx = new Context(xml, robotName);
 
 			let blocks = ctx.topLevelBlocks;
 			assertValidBlocks(blocks, ctx);

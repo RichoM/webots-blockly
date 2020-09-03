@@ -1889,11 +1889,11 @@ let UziBlock = (function () {
       });
   }
 
-  function getGeneratedCode(){
+  function getGeneratedCode(robotName){
     try {
       workspace.getAllBlocks().forEach(b => b.setWarningText(null));
       let xml = Blockly.Xml.workspaceToDom(workspace);
-      return BlocksToPy.generate(xml);
+      return BlocksToPy.generate(xml, robotName);
     } catch (err) {
       let errors = err["errors"];
       if (errors) {

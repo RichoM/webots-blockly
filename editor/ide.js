@@ -84,7 +84,6 @@ class Output {
   let layout, defaultLayoutConfig;
   let codeEditor;
   let autorunInterval, autorunNextTime;
-  let lastFileName;
   let output;
 
   let userPorts = [];
@@ -97,6 +96,7 @@ class Output {
       // NOTE(Richo): The following tasks need to be done in order:
       loadDefaultLayoutConfig()
         .then(initializeDefaultLayout)
+        .then(initializeTopBar)
         .then(initializeBlocksPanel)
         .then(initializeBlocklyVariablesModal)
         .then(initializeCodePanel)
@@ -149,6 +149,13 @@ class Output {
     updateSize();
     resizeBlockly();
     checkBrokenLayout();
+  }
+
+  function initializeTopBar() {
+    $("#robot-name").on("input", function() {
+      saveToLocalStorage();
+      scheduleAutorun();
+    });
   }
 
   function initializeBlocksPanel() {
@@ -365,8 +372,9 @@ class Output {
 	function restoreFromLocalStorage() {
     try {
       let ui = {
-        layout: JSON.parse(localStorage["uzi.layout"] || "null"),
-        blockly: JSON.parse(localStorage["uzi.blockly"] || "null"),
+        robotName: localStorage["webots.robotName"] || "",
+        layout: JSON.parse(localStorage["webots.layout"] || "null"),
+        blockly: JSON.parse(localStorage["webots.blockly"] || "null"),
       };
       setUIState(ui);
     } catch (err) {
@@ -378,12 +386,14 @@ class Output {
     if (UziBlock.getWorkspace() == undefined || layout == undefined) return;
 
     let ui = getUIState();
-    localStorage["uzi.layout"] = JSON.stringify(ui.layout);
-    localStorage["uzi.blockly"] = JSON.stringify(ui.blockly);
+    localStorage["webots.robotName"] = ui.robotName;
+    localStorage["webots.layout"] = JSON.stringify(ui.layout);
+    localStorage["webots.blockly"] = JSON.stringify(ui.blockly);
   }
 
   function getUIState() {
     return {
+      robotName: $("#robot-name").val(),
       layout: layout.toConfig(),
       blockly: UziBlock.getDataForStorage(),
     };
@@ -391,6 +401,10 @@ class Output {
 
   function setUIState(ui) {
     try {
+      if (ui.robotName) {
+        $("#robot-name").val(ui.robotName);
+      }
+
       if (ui.layout) {
         initializeLayout(ui.layout);
       }
@@ -429,7 +443,8 @@ class Output {
 
     let src = "";
     try {
-  		src = UziBlock.getGeneratedCode();
+      let robotName = $("#robot-name").val();
+  		src = UziBlock.getGeneratedCode(robotName);
       output.success("Compilación exitosa!");
     } catch (err) {
       src = err.code || "";
