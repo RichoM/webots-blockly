@@ -226,7 +226,7 @@ let BlocksToPy = (function () {
 				throw "Nombre de motor inválido '" + motorName + "'";
 			}
 			generateCodeForValue(block, ctx, "motorSpeed");
-			ctx.builder.appendLine(" / 100)");
+			ctx.builder.appendLine(")");
 		},
 		sonar_getvalue: function (block, ctx) {
 			let sonarName = asIdentifier(XML.getChildNode(block, "sonarName").innerText);
