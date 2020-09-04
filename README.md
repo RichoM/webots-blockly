@@ -2,10 +2,16 @@
 
 Open the [editor](https://richom.github.io/webots-blockly/editor/)
 
-To start the server run:
+## Instructions
 
-    $ npm start
+To start the server:
 
-To install node-static (I don't know if this is necessary but I'll probably forget how to do it):
+    $ npm run server
 
-    $ npm install --save-dev node-static
+To start the desktop app:
+
+    $ npm run desktop
+
+To install dependencies (I add this mostly as a reminder to myself):
+
+    $ npm install

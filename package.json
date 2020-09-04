@@ -2,7 +2,6 @@
   "name": "webots-blockly",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
   "dependencies": {},
   "devDependencies": {
     "electron": "^9.0.5",
@@ -10,7 +9,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "desktop": "electron main.js",
+    "server": "node server.js"
   },
   "repository": {
     "type": "git",
