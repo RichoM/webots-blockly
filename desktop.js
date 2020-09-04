@@ -1,4 +1,5 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow } = require('electron');
+const path = require('path');
 
 function createWindow () {
   // Create the browser window.
@@ -11,7 +12,7 @@ function createWindow () {
   });
 
   // and load the index.html of the app.
-  win.loadFile('editor/index.html');
+  win.loadFile(path.resolve(app.getAppPath(), 'editor/index.html'));
   win.maximize();
   win.show();
 }

@@ -2,6 +2,7 @@
   "name": "webots-blockly",
   "version": "1.0.0",
   "description": "",
+  "main": "desktop.js",
   "dependencies": {},
   "devDependencies": {
     "electron": "^9.0.5",
