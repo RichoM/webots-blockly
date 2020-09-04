@@ -3,18 +3,17 @@ const { app, BrowserWindow } = require('electron')
 function createWindow () {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    show: false,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true
     }
-  })
+  });
 
   // and load the index.html of the app.
-  win.loadFile('editor/index.html')
-
-  // Open the DevTools.
-  win.webContents.openDevTools()
+  win.loadFile('editor/index.html');
+  win.maximize();
+  win.show();
 }
 
 // This method will be called when Electron has finished
