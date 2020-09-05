@@ -1981,8 +1981,6 @@ let UziBlock = (function () {
     on: on,
     refreshToolbox: refreshToolbox,
     resizeWorkspace: resizeBlockly,
-    toXML: toXML,
-    fromXML: fromXML,
     getGeneratedCode: getGeneratedCode,
 
     getWorkspace: function () { return workspace; },
