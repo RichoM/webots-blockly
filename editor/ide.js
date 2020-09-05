@@ -171,6 +171,7 @@ class Output {
           if (!response.canceled) {
             let path = response.filePath;
             $("#output-path").val(path);
+            UziBlock.getWorkspace().clear();
             saveToLocalStorage();
             scheduleAutorun();
           }
@@ -253,6 +254,7 @@ class Output {
             buttons: ["yes", "no"]
           }).then(answer => {
             if (answer.response == 0) {
+              UziBlock.getWorkspace().clear();
               return true;
             } else {
               return false;
