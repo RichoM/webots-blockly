@@ -184,9 +184,11 @@ class Output {
         }).then(function (response) {
           if (!response.canceled) {
             let path = response.filePaths[0];
-            $("#output-path").val(path);
-            saveToLocalStorage();
-            scheduleAutorun();
+            readBlocksFile(path).then(() => {
+              $("#output-path").val(path);
+              saveToLocalStorage();
+              scheduleAutorun();
+            });
           }
         });
       });
@@ -211,6 +213,21 @@ class Output {
       saveToLocalStorage();
       scheduleAutorun();
     });
+  }
+
+  function readBlocksFile(codePath) {
+    if (!fs) return Promise.resolve();
+    let blocksPath = codePath.substr(0, codePath.lastIndexOf(".")) + ".blocks";
+    // TODO(Richo): Show warning if file doesn't exist
+    return fs.promises.readFile(blocksPath)
+      .then(contents => {
+        let data = JSON.parse(contents);
+        // TODO(Richo): Check for changes in the code file made outside the editor
+        UziBlock.setDataFromStorage(data);
+      }).catch(err => {
+        output.error(err.toString());
+        throw err;
+      });
   }
 
   function initializeBlocksPanel() {
