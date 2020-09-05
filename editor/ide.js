@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 class Output {
   constructor() {
     this.history = [];
@@ -170,6 +172,7 @@ class Output {
             let path = response.filePath;
             $("#output-path").val(path);
             saveToLocalStorage();
+            scheduleAutorun();
           }
         });
       });
@@ -183,6 +186,7 @@ class Output {
             let path = response.filePaths[0];
             $("#output-path").val(path);
             saveToLocalStorage();
+            scheduleAutorun();
           }
         });
       });
@@ -197,6 +201,7 @@ class Output {
             let path = response.filePath;
             $("#output-path").val(path);
             saveToLocalStorage();
+            scheduleAutorun();
           }
         })
       });
@@ -369,7 +374,13 @@ class Output {
   }
 
   function initializeAutorun() {
-    setInterval(autorun, 150);
+    const interval = 150;
+    function loop() {
+      autorun().finally(() => {
+        setTimeout(loop, interval);
+      });
+    }
+    setTimeout(loop, interval);
   }
 
   function getNavigatorLanguages() {
@@ -488,10 +499,10 @@ class Output {
   }
 
 	function autorun() {
-		if (autorunNextTime === undefined) return;
+		if (autorunNextTime === undefined) return Promise.resolve();
 
 		let currentTime = +new Date();
-		if (currentTime < autorunNextTime) return;
+		if (currentTime < autorunNextTime) return Promise.resolve();
     autorunNextTime = undefined;
 
     output.clear();
@@ -511,7 +522,23 @@ class Output {
     if (codeEditor.getValue() !== src) {
       codeEditor.setValue(src, 1);
     }
+
+    return writeToOutput(src)
 	}
+
+  function writeToOutput(src) {
+    let outputPath = $("#output-path").val();
+    if (!fs || !outputPath || outputPath.trim() == "") {
+      output.error("El archivo no se pudo escribir");
+      return Promise.reject();
+    }
+
+    return fs.promises.writeFile(outputPath, src).then(() => {
+      output.success("El archivo se escribió correctamente!");
+    }).catch(err => {
+      output.error(err.toString());
+    });
+  }
 
   return IDE;
 })();
