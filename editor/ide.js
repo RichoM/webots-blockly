@@ -1,3 +1,4 @@
+const electron = require('electron');
 const fs = require('fs');
 
 class Output {
@@ -154,7 +155,6 @@ class Output {
   }
 
   function initializeTopBar() {
-    let electron = require('electron');
     if (!electron) {
       $("#new-button").attr("disabled", true);
       $("#open-button").attr("disabled", true);
@@ -184,7 +184,9 @@ class Output {
         }).then(function (response) {
           if (!response.canceled) {
             let path = response.filePaths[0];
-            readBlocksFile(path).then(() => {
+            readBlocksFile(path).then(ok => {
+              if (!ok) return;
+
               $("#output-path").val(path);
               saveToLocalStorage();
               scheduleAutorun();
@@ -222,11 +224,28 @@ class Output {
     return fs.promises.readFile(blocksPath)
       .then(contents => {
         let data = JSON.parse(contents);
-        // TODO(Richo): Check for changes in the code file made outside the editor
-        UziBlock.setDataFromStorage(data);
+        return fs.promises.stat(codePath).then(stats => {
+          let mtime = stats.mtime.toISOString();
+          if (mtime != data["mtime"]) {
+            return electron.remote.dialog.showMessageBox({
+              type: "warning",
+              message: "El archivo ha sido modificado desde la última vez que lo abrió. Si continúa puede perder los cambios.\n¿Desea continuar?",
+              buttons: ["yes", "no"]
+            }).then(answer => {
+              if (answer.response == 0) {
+                UziBlock.setDataFromStorage(data);
+                return true;
+              } else {
+                return false;
+              }
+            })
+          }
+          UziBlock.setDataFromStorage(data);
+          return true;
+        });
       }).catch(err => {
         output.error(err.toString());
-        throw err;
+        return false;
       });
   }
 
@@ -550,11 +569,13 @@ class Output {
       return Promise.reject();
     }
 
-    let blocksPath = codePath.substr(0, codePath.lastIndexOf(".")) + ".blocks";
-    return Promise.all([
-      fs.promises.writeFile(codePath, src),
-      fs.promises.writeFile(blocksPath, JSON.stringify(blocks))
-    ]).then(() => {
+    return fs.promises.writeFile(codePath, src).then(() => {
+      return fs.promises.stat(codePath).then(stats => {
+        let blocksPath = codePath.substr(0, codePath.lastIndexOf(".")) + ".blocks";
+        blocks["mtime"] = stats.mtime.toISOString();
+        return fs.promises.writeFile(blocksPath, JSON.stringify(blocks))
+      });
+    }).then(() => {
       output.success("El archivo se escribió correctamente!");
     }).catch(err => {
       output.error(err.toString());
