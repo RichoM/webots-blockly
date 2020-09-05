@@ -218,7 +218,7 @@ class Output {
   }
 
   function readBlocksFile(codePath) {
-    if (!fs) return Promise.resolve();
+    if (!fs || !electron) return Promise.resolve(false);
 
     let blocksPath = codePath.substr(0, codePath.lastIndexOf(".")) + ".blocks";
     return fs.promises.readFile(blocksPath)
@@ -229,7 +229,8 @@ class Output {
           if (mtime != data["mtime"]) {
             return electron.remote.dialog.showMessageBox({
               type: "warning",
-              message: "El archivo ha sido modificado desde la última vez que lo abrió.\nSi continúa puede perder los cambios.\n¿Desea continuar?",
+              title: "¡Cuidado!",
+              message: 'El archivo "' + codePath + '" ha sido modificado desde la última vez que lo abrió.\n\nSi continúa puede perder los cambios.\n¿Desea continuar?',
               buttons: ["yes", "no"]
             }).then(answer => {
               if (answer.response == 0) {
@@ -247,7 +248,8 @@ class Output {
         if (err["code"] == "ENOENT") {
           return electron.remote.dialog.showMessageBox({
             type: "warning",
-            message: "No se encontró un archivo de bloques vinculado a este archivo.\nSi continúa puede perder los cambios.\n¿Desea continuar?",
+            title: "¡Cuidado!",
+            message: 'No se encontró un archivo de bloques vinculado a "' + codePath + '".\n\n¿Desea continuar?',
             buttons: ["yes", "no"]
           }).then(answer => {
             if (answer.response == 0) {
