@@ -268,12 +268,12 @@ class Output {
   function initializeBlocksPanel() {
     return UziBlock.init()
       .then(function () {
+        restoreFromLocalStorage();
         UziBlock.on("change", function () {
           saveToLocalStorage();
           scheduleAutorun();
         });
-      })
-      .then(restoreFromLocalStorage);
+      });
   }
 
 
@@ -521,16 +521,23 @@ class Output {
         $("#robot-name").val(ui.robotName);
       }
 
-      if (ui.outputPath) {
-        $("#output-path").val(ui.outputPath);
-      }
-
       if (ui.layout) {
         initializeLayout(ui.layout);
       }
 
       if (ui.blockly) {
         UziBlock.setDataFromStorage(ui.blockly);
+      }
+
+      if (ui.outputPath && ui.outputPath.trim != "") {
+        readBlocksFile(ui.outputPath).then(ok => {
+          if (ok) {
+            $("#output-path").val(ui.outputPath);
+          } else {
+            $("#output-path").val("");
+            saveToLocalStorage();
+          }
+        });
       }
     } catch (err) {
       console.error(err);
@@ -551,7 +558,7 @@ class Output {
   }
 
 	function autorun() {
-		if (autorunNextTime === undefined) return Promise.resolve();
+		if (autorunNextTime == undefined) return Promise.resolve();
 
 		let currentTime = +new Date();
 		if (currentTime < autorunNextTime) return Promise.resolve();
