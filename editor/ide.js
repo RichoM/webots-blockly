@@ -523,17 +523,21 @@ class Output {
       codeEditor.setValue(src, 1);
     }
 
-    return writeToOutput(src)
+    return writeToOutput(src, UziBlock.getDataForStorage());
 	}
 
-  function writeToOutput(src) {
-    let outputPath = $("#output-path").val();
-    if (!fs || !outputPath || outputPath.trim() == "") {
+  function writeToOutput(src, blocks) {
+    let codePath = $("#output-path").val();
+    if (!fs || !codePath || codePath.trim() == "") {
       output.error("El archivo no se pudo escribir");
       return Promise.reject();
     }
 
-    return fs.promises.writeFile(outputPath, src).then(() => {
+    let blocksPath = codePath.substr(0, codePath.lastIndexOf(".")) + ".blocks";
+    return Promise.all([
+      fs.promises.writeFile(codePath, src),
+      fs.promises.writeFile(blocksPath, JSON.stringify(blocks))
+    ]).then(() => {
       output.success("El archivo se escribió correctamente!");
     }).catch(err => {
       output.error(err.toString());
