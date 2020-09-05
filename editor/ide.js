@@ -219,8 +219,8 @@ class Output {
 
   function readBlocksFile(codePath) {
     if (!fs) return Promise.resolve();
+
     let blocksPath = codePath.substr(0, codePath.lastIndexOf(".")) + ".blocks";
-    // TODO(Richo): Show warning if file doesn't exist
     return fs.promises.readFile(blocksPath)
       .then(contents => {
         let data = JSON.parse(contents);
@@ -229,7 +229,7 @@ class Output {
           if (mtime != data["mtime"]) {
             return electron.remote.dialog.showMessageBox({
               type: "warning",
-              message: "El archivo ha sido modificado desde la última vez que lo abrió. Si continúa puede perder los cambios.\n¿Desea continuar?",
+              message: "El archivo ha sido modificado desde la última vez que lo abrió.\nSi continúa puede perder los cambios.\n¿Desea continuar?",
               buttons: ["yes", "no"]
             }).then(answer => {
               if (answer.response == 0) {
@@ -238,14 +238,28 @@ class Output {
               } else {
                 return false;
               }
-            })
+            });
           }
           UziBlock.setDataFromStorage(data);
           return true;
         });
       }).catch(err => {
-        output.error(err.toString());
-        return false;
+        if (err["code"] == "ENOENT") {
+          return electron.remote.dialog.showMessageBox({
+            type: "warning",
+            message: "No se encontró un archivo de bloques vinculado a este archivo.\nSi continúa puede perder los cambios.\n¿Desea continuar?",
+            buttons: ["yes", "no"]
+          }).then(answer => {
+            if (answer.response == 0) {
+              return true;
+            } else {
+              return false;
+            }
+          });
+        } else {
+          output.error(err.toString());
+          return false;
+        }
       });
   }
 
