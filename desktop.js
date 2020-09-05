@@ -7,6 +7,7 @@ function createWindow () {
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
+      enableRemoteModule: true,
       nodeIntegration: true
     }
   });
@@ -15,6 +16,8 @@ function createWindow () {
   win.loadFile(path.resolve(app.getAppPath(), 'editor/index.html'));
   win.maximize();
   win.show();
+
+  win.openDevTools();
 }
 
 // This method will be called when Electron has finished

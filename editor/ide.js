@@ -152,6 +152,56 @@ class Output {
   }
 
   function initializeTopBar() {
+    let electron = require('electron');
+    if (!electron) {
+      $("#new-button").attr("disabled", true);
+      $("#open-button").attr("disabled", true);
+      $("#save-button").attr("disabled", true);
+    } else {
+      const { dialog } = electron.remote;
+
+      $("#new-button").on("click", function () {
+        dialog.showSaveDialog({
+          defaultPath: "roboliga.py",
+          filters: [{name: "Python file", extensions: ["py"]}],
+          properties: ["openFile"]
+        }).then(function (response) {
+          if (!response.canceled) {
+            let path = response.filePath;
+            $("#output-path").val(path);
+            saveToLocalStorage();
+          }
+        });
+      });
+
+      $("#open-button").on("click", function () {
+        dialog.showOpenDialog({
+          filters: [{name: "Python file", extensions: ["py"]}],
+          properties: ["openFile"]
+        }).then(function (response) {
+          if (!response.canceled) {
+            let path = response.filePaths[0];
+            $("#output-path").val(path);
+            saveToLocalStorage();
+          }
+        });
+      });
+
+      $("#save-button").on("click", function () {
+        dialog.showSaveDialog({
+          defaultPath: "roboliga.py",
+          filters: [{name: "Python file", extensions: ["py"]}],
+          properties: ["openFile"]
+        }).then(function (response) {
+          if (!response.canceled) {
+            let path = response.filePath;
+            $("#output-path").val(path);
+            saveToLocalStorage();
+          }
+        })
+      });
+    }
+
     $("#robot-name").on("input", function() {
       saveToLocalStorage();
       scheduleAutorun();
@@ -373,6 +423,7 @@ class Output {
     try {
       let ui = {
         robotName: localStorage["webots.robotName"] || "",
+        outputPath: localStorage["webots.outputPath"] || "",
         layout: JSON.parse(localStorage["webots.layout"] || "null"),
         blockly: JSON.parse(localStorage["webots.blockly"] || "null"),
       };
@@ -387,6 +438,7 @@ class Output {
 
     let ui = getUIState();
     localStorage["webots.robotName"] = ui.robotName;
+    localStorage["webots.outputPath"] = ui.outputPath;
     localStorage["webots.layout"] = JSON.stringify(ui.layout);
     localStorage["webots.blockly"] = JSON.stringify(ui.blockly);
   }
@@ -394,6 +446,7 @@ class Output {
   function getUIState() {
     return {
       robotName: $("#robot-name").val(),
+      outputPath: $("#output-path").val(),
       layout: layout.toConfig(),
       blockly: UziBlock.getDataForStorage(),
     };
@@ -403,6 +456,10 @@ class Output {
     try {
       if (ui.robotName) {
         $("#robot-name").val(ui.robotName);
+      }
+
+      if (ui.outputPath) {
+        $("#output-path").val(ui.outputPath);
       }
 
       if (ui.layout) {
