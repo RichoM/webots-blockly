@@ -238,6 +238,23 @@ let BlocksToPy = (function () {
 				throw "Nombre de sensor inválido '" + sonarName + "'";
 			}
 		},
+		print: function (block, ctx) {
+			ctx.builder.indent().append("print(");
+			generateCodeForValue(block, ctx, "value");
+			ctx.builder.appendLine(")");
+		},
+		string_constant: function (block, ctx) {
+			let value = XML.getChildNode(block, "value").innerText;
+			ctx.builder.append('"' + value + '"');
+		},
+		string_concat: function (block, ctx) {
+			ctx.builder.append("str(");
+			generateCodeForValue(block, ctx, "left");
+			ctx.builder.append(")+");
+			ctx.builder.append("str(");
+			generateCodeForValue(block, ctx, "right");
+			ctx.builder.append(")");
+		},
 		floor_getcolor: function (block, ctx) {
 			ctx.builder.append("robot.getColorPiso()");
 		},

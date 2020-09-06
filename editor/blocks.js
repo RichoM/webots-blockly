@@ -860,6 +860,7 @@ let UziBlock = (function () {
   function initSpecialBlocks() {
     initStartBlocks();
     initRobotBlocks();
+    initPrintingBlocks();
     initVariableBlocks();
     initProcedureBlocks();
     initFunctionBlocks();
@@ -958,6 +959,60 @@ let UziBlock = (function () {
         //this.setInputsInline(false);
         this.setOutput(true, null);
         this.setColour(0);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+  }
+
+  function initPrintingBlocks() {
+    Blockly.Blocks['print'] = {
+      init: function() {
+        let msg = i18n.translate("print %value");
+        let inputFields = {
+          "value": () => this.appendValueInput("value").setCheck(null)
+        };
+
+        initBlock(this, msg, inputFields);
+
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(140);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+
+
+    Blockly.Blocks['string_constant'] = {
+      init: function() {
+        let msg = i18n.translate("%value");
+        let inputFields = {
+          "value": () => this.appendDummyInput()
+                    .appendField(new Blockly.FieldTextInput("Hola mundo"), "value")
+        };
+
+        initBlock(this, msg, inputFields);
+
+        this.setOutput(true, "String");
+        this.setColour(140);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+
+    Blockly.Blocks['string_concat'] = {
+      init: function() {
+        let msg = i18n.translate("concatenar %1 %2");
+        let inputFields = {
+          "1": () => this.appendValueInput("left").setCheck(null),
+          "2": () => this.appendValueInput("right").setCheck(null)
+        };
+
+        initBlock(this, msg, inputFields);
+
+        this.setOutput(true, "String");
+        this.setColour(140);
         this.setTooltip("");
         this.setHelpUrl("");
       }

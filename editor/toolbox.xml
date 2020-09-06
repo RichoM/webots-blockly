@@ -17,6 +17,31 @@
     </block>
     <block type="floor_getcolor"></block>
   </category>
+
+  <category name="Printing" colour="140">
+    <block type="print">
+      <value name="value">
+        <shadow type="string_constant">
+          <field name="value">Hola mundo</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="string_concat">
+      <value name="left">
+        <shadow type="string_constant">
+          <field name="value">Hola </field>
+        </shadow>
+      </value>
+      <value name="right">
+        <shadow type="string_constant">
+          <field name="value">mundo</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="string_constant">
+      <field name="value">Hola mundo</field>
+    </block>
+  </category>
   <category name="Control" colour="#5b80a5">
     <block type="conditional_simple">
       <value name="condition">
