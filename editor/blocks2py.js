@@ -238,6 +238,19 @@ let BlocksToPy = (function () {
 				throw "Nombre de sensor inválido '" + sonarName + "'";
 			}
 		},
+		floor_getcolor: function (block, ctx) {
+			ctx.builder.append("robot.getColorPiso()");
+		},
+		bumper_getvalue: function (block, ctx) {
+			let bumperName = asIdentifier(XML.getChildNode(block, "bumperName").innerText);
+			if (bumperName == "bumperI") {
+				ctx.builder.append("robot.getBI()");
+			} else if (bumperName == "bumperD") {
+				ctx.builder.append("robot.getBD()");
+			} else {
+				throw "Nombre de bumper inválido '" + bumperName + "'";
+			}
+		},
 		print: function (block, ctx) {
 			ctx.builder.indent().append("print(");
 			generateCodeForValue(block, ctx, "value");
@@ -254,9 +267,6 @@ let BlocksToPy = (function () {
 			ctx.builder.append("str(");
 			generateCodeForValue(block, ctx, "right");
 			ctx.builder.append(")");
-		},
-		floor_getcolor: function (block, ctx) {
-			ctx.builder.append("robot.getColorPiso()");
 		},
 		forever: function (block, ctx) {
 			ctx.builder.indent().appendLine("while true:")

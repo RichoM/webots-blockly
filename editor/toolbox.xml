@@ -16,8 +16,10 @@
       <field name="sonarName">sensorDistanciaI</field>
     </block>
     <block type="floor_getcolor"></block>
+    <block type="bumper_getvalue">
+      <field name="bumperName">bumperI</field>
+    </block>
   </category>
-
   <category name="Printing" colour="140">
     <block type="print">
       <value name="value">

@@ -942,7 +942,7 @@ let UziBlock = (function () {
         initBlock(this, msg, inputFields);
 
         //this.setInputsInline(false);
-        this.setOutput(true, null);
+        this.setOutput(true, "Number");
         this.setColour(0);
         this.setTooltip("");
         this.setHelpUrl("");
@@ -957,7 +957,27 @@ let UziBlock = (function () {
         initBlock(this, msg, inputFields);
 
         //this.setInputsInline(false);
-        this.setOutput(true, null);
+        this.setOutput(true, "Number");
+        this.setColour(0);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+
+    Blockly.Blocks['bumper_getvalue'] = {
+      init: function() {
+        let msg = i18n.translate("está presionado el %bumperName");
+        let inputFields = {
+          "bumperName": input => input.setAlign(Blockly.ALIGN_RIGHT)
+              .appendField(new Blockly.FieldDropdown([[i18n.translate("bumperIzquierdo"), "bumperI"],
+                                                      [i18n.translate("bumperDerecho"), "bumperD"]]),
+                                                      "bumperName")
+        };
+
+        initBlock(this, msg, inputFields);
+
+        //this.setInputsInline(false);
+        this.setOutput(true, "Boolean");
         this.setColour(0);
         this.setTooltip("");
         this.setHelpUrl("");
