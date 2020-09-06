@@ -1,5 +1,6 @@
 const electron = require('electron');
 const fs = require('fs');
+const crypto = require('crypto');
 
 class Output {
   constructor() {
@@ -225,9 +226,8 @@ class Output {
     return fs.promises.readFile(blocksPath)
       .then(contents => {
         let data = JSON.parse(contents);
-        return fs.promises.stat(codePath).then(stats => {
-          let mtime = stats.mtime.toISOString();
-          if (mtime != data["mtime"]) {
+        return fs.promises.readFile(codePath).then(src => {
+          if (checksum(src) != data["checksum"]) {
             return electron.remote.dialog.showMessageBox({
               type: "warning",
               title: "¡Cuidado!",
@@ -597,17 +597,23 @@ class Output {
     }
 
     return fs.promises.writeFile(codePath, src).then(() => {
-      return fs.promises.stat(codePath).then(stats => {
-        let blocksPath = codePath.substr(0, codePath.lastIndexOf(".")) + ".blocks";
-        blocks["robotName"] = $("#robot-name").val();
-        blocks["mtime"] = stats.mtime.toISOString();
-        return fs.promises.writeFile(blocksPath, JSON.stringify(blocks))
-      });
+      let blocksPath = codePath.substr(0, codePath.lastIndexOf(".")) + ".blocks";
+      blocks["robotName"] = $("#robot-name").val();
+      blocks["checksum"] = checksum(src);
+      return fs.promises.writeFile(blocksPath, JSON.stringify(blocks));
     }).then(() => {
       output.success("El archivo se escribió correctamente!");
     }).catch(err => {
       output.error(err.toString());
     });
+  }
+
+  function checksum(str, algorithm, encoding) {
+    if (!crypto) return null;
+    return crypto
+      .createHash(algorithm || 'sha1')
+      .update(str, 'utf8')
+      .digest(encoding || 'hex')
   }
 
   return IDE;
