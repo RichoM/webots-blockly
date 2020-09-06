@@ -235,6 +235,7 @@ class Output {
               buttons: ["yes", "no"]
             }).then(answer => {
               if (answer.response == 0) {
+                if (data["robotName"]) { $("#robot-name").val(data["robotName"]); }
                 UziBlock.setDataFromStorage(data);
                 return true;
               } else {
@@ -242,6 +243,7 @@ class Output {
               }
             });
           }
+          if (data["robotName"]) { $("#robot-name").val(data["robotName"]); }
           UziBlock.setDataFromStorage(data);
           return true;
         });
@@ -597,6 +599,7 @@ class Output {
     return fs.promises.writeFile(codePath, src).then(() => {
       return fs.promises.stat(codePath).then(stats => {
         let blocksPath = codePath.substr(0, codePath.lastIndexOf(".")) + ".blocks";
+        blocks["robotName"] = $("#robot-name").val();
         blocks["mtime"] = stats.mtime.toISOString();
         return fs.promises.writeFile(blocksPath, JSON.stringify(blocks))
       });
