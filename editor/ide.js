@@ -171,6 +171,7 @@ class Output {
         }).then(function (response) {
           if (!response.canceled) {
             let path = response.filePath;
+            $("#robot-name").val(getRobotNameFromPath(path));
             $("#output-path").val(path);
             UziBlock.getWorkspace().clear();
             saveToLocalStorage();
@@ -217,6 +218,16 @@ class Output {
       saveToLocalStorage();
       scheduleAutorun();
     });
+  }
+
+  function getRobotNameFromPath(path) {
+    try {
+      path = path.split('\\').pop().split('/').pop();
+      let name = path.substr(0, path.lastIndexOf(".")).trim();
+      return name;
+    } catch {
+      return "";
+    }
   }
 
   function readBlocksFile(codePath) {
