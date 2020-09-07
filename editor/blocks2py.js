@@ -261,12 +261,29 @@ let BlocksToPy = (function () {
 			ctx.builder.append('"' + value + '"');
 		},
 		string_concat: function (block, ctx) {
-			ctx.builder.append("str(");
-			generateCodeForValue(block, ctx, "left");
-			ctx.builder.append(")+");
-			ctx.builder.append("str(");
-			generateCodeForValue(block, ctx, "right");
-			ctx.builder.append(")");
+			function isString(name) {
+				let stringBlocks = new Set(["string_constant", "string_concat"]);
+				let type = XML.getLastChild(XML.getChildNode(block, name)).getAttribute("type");
+				return stringBlocks.has(type);
+			}
+
+			if (isString("left")) {
+				generateCodeForValue(block, ctx, "left");
+			} else {
+				ctx.builder.append("str(");
+				generateCodeForValue(block, ctx, "left");
+				ctx.builder.append(")");
+			}
+
+			ctx.builder.append(" + ");
+
+			if (isString("right")) {
+				generateCodeForValue(block, ctx, "right");
+			} else {
+				ctx.builder.append("str(");
+				generateCodeForValue(block, ctx, "right");
+				ctx.builder.append(")");
+			}
 		},
 		forever: function (block, ctx) {
 			ctx.builder.indent().appendLine("while true:")
