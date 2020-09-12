@@ -502,7 +502,7 @@ class Output {
       let ui = {
         robotName: localStorage["webots.robotName"] || "",
         outputPath: localStorage["webots.outputPath"] || "",
-        layout: JSON.parse(localStorage["webots.layout"] || "null"),
+        //layout: JSON.parse(localStorage["webots.layout"] || "null"),
         blockly: JSON.parse(localStorage["webots.blockly"] || "null"),
       };
       setUIState(ui);
@@ -517,7 +517,7 @@ class Output {
     let ui = getUIState();
     localStorage["webots.robotName"] = ui.robotName;
     localStorage["webots.outputPath"] = ui.outputPath;
-    localStorage["webots.layout"] = JSON.stringify(ui.layout);
+    //localStorage["webots.layout"] = JSON.stringify(ui.layout);
     localStorage["webots.blockly"] = JSON.stringify(ui.blockly);
   }
 
