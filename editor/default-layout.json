@@ -10,7 +10,8 @@
       "type": "component",
       "componentName": "DOM",
       "componentState": { "id": "#blocks-panel" },
-      "title": "Blocks"
+      "title": "Blocks",
+      "isClosable": false
     },{
       "type": "column",
       "width": 35,
@@ -18,13 +19,15 @@
           "type": "component",
           "componentName": "DOM",
           "componentState": { "id": "#code-panel" },
-          "title": "Code"
+          "title": "Code",
+          "isClosable": false
         },{
           "type": "component",
           "height": 30,
           "componentName": "DOM",
           "componentState": { "id": "#output-panel" },
-          "title": "Output"
+          "title": "Output",
+          "isClosable": false
         }]
       }]
     }]
