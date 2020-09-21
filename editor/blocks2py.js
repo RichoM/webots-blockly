@@ -814,9 +814,15 @@ let BlocksToPy = (function () {
 			ctx.builder.append(")");
 		},
 		return: function (block, ctx) {
+			if (ctx.path.find(b => ["simulator_setup", "simulator_loop"].includes(b.getAttribute("type")))) {
+				throw "El bloque 'salir' es sólo válido dentro de una función o un procedimiento";
+			}
 			ctx.builder.indent().appendLine("return");
 		},
 		return_value: function (block, ctx) {
+			if (ctx.path.find(b => ["simulator_setup", "simulator_loop"].includes(b.getAttribute("type")))) {
+				throw "El bloque 'devolver' es sólo válido dentro de una función o un procedimiento";
+			}
 			ctx.builder.indent().append("return ");
 			generateCodeForValue(block, ctx, "value");
 			ctx.builder.newline();
