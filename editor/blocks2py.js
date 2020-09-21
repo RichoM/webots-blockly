@@ -886,16 +886,17 @@ let BlocksToPy = (function () {
 
 	function generateCodeForStatements(block, ctx, name) {
 		let stmts = getStatements(block, name);
-		if (stmts.length == 0) {
+		let count = 0;
+		stmts.forEach(stmt => {
+			try {
+				generateCodeFor(stmt, ctx);
+				count++;
+			} catch (err) {
+				ctx.registerError(stmt, err);
+			}
+		});
+		if (count == 0) {
 			ctx.builder.indent().appendLine("pass");
-		} else {
-			stmts.forEach(stmt => {
-				try {
-					generateCodeFor(stmt, ctx);
-				} catch (err) {
-					ctx.registerError(stmt, err);
-				}
-			});
 		}
 	}
 
