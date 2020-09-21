@@ -71,6 +71,16 @@ let BlocksToPy = (function () {
 			return sections.join("\n");
 		}
 
+		findProcedureNamed(name) {
+			let procBlocks = new Set(["proc_definition_0args", "proc_definition_1args", "proc_definition_2args", "proc_definition_3args"]);
+			return this.topLevelBlocks.filter(b => procBlocks.has(b.getAttribute("type"))).find(b => b.children["procName"].innerText == name);
+		}
+
+		findFunctionNamed(name) {
+			let procBlocks = new Set(["func_definition_0args", "func_definition_1args", "func_definition_2args", "func_definition_3args"])
+			return this.topLevelBlocks.filter(b => procBlocks.has(b.getAttribute("type"))).find(b => b.children["funcName"].innerText == name);
+		}
+
 		registerError(block, msg) {
 			this.errors.push({block: block.getAttribute("id"), msg: msg});
 		}
@@ -653,10 +663,16 @@ let BlocksToPy = (function () {
 		},
 		proc_call_0args: function (block, ctx) {
 			let procName = asIdentifier(XML.getChildNode(block, "procName").innerText);
+			if (!ctx.findProcedureNamed(procName)) {
+				throw "No se encontró un procedimiento llamado '" + procName + "'";
+			}
 			ctx.builder.indent().append(procName).appendLine("()");
 		},
 		proc_call_1args: function (block, ctx) {
 			let procName = asIdentifier(XML.getChildNode(block, "procName").innerText);
+			if (!ctx.findProcedureNamed(procName)) {
+				throw "No se encontró un procedimiento llamado '" + procName + "'";
+			}
 			let args = ["arg0"];
 			ctx.builder.indent().append(procName).append("(");
 			args.forEach((arg, i) => {
@@ -667,6 +683,9 @@ let BlocksToPy = (function () {
 		},
 		proc_call_2args: function (block, ctx) {
 			let procName = asIdentifier(XML.getChildNode(block, "procName").innerText);
+			if (!ctx.findProcedureNamed(procName)) {
+				throw "No se encontró un procedimiento llamado '" + procName + "'";
+			}
 			let args = ["arg0", "arg1"];
 			ctx.builder.indent().append(procName).append("(");
 			args.forEach((arg, i) => {
@@ -677,6 +696,9 @@ let BlocksToPy = (function () {
 		},
 		proc_call_3args: function (block, ctx) {
 			let procName = asIdentifier(XML.getChildNode(block, "procName").innerText);
+			if (!ctx.findProcedureNamed(procName)) {
+				throw "No se encontró un procedimiento llamado '" + procName + "'";
+			}
 			let args = ["arg0", "arg1", "arg2"];
 			ctx.builder.indent().append(procName).append("(");
 			args.forEach((arg, i) => {
@@ -747,10 +769,16 @@ let BlocksToPy = (function () {
 		},
 		func_call_0args: function (block, ctx) {
 			let funcName = asIdentifier(XML.getChildNode(block, "funcName").innerText);
+			if (!ctx.findFunctionNamed(funcName)) {
+				throw "No se encontró una función llamada '" + funcName + "'";
+			}
 			ctx.builder.append(funcName).append("()");
 		},
 		func_call_1args: function (block, ctx) {
 			let funcName = asIdentifier(XML.getChildNode(block, "funcName").innerText);
+			if (!ctx.findFunctionNamed(funcName)) {
+				throw "No se encontró una función llamada '" + funcName + "'";
+			}
 			let args = ["arg0"];
 			ctx.builder.append(funcName).append("(");
 			args.forEach((arg, i) => {
@@ -761,6 +789,9 @@ let BlocksToPy = (function () {
 		},
 		func_call_2args: function (block, ctx) {
 			let funcName = asIdentifier(XML.getChildNode(block, "funcName").innerText);
+			if (!ctx.findFunctionNamed(funcName)) {
+				throw "No se encontró una función llamada '" + funcName + "'";
+			}
 			let args = ["arg0", "arg1"];
 			ctx.builder.append(funcName).append("(");
 			args.forEach((arg, i) => {
@@ -771,6 +802,9 @@ let BlocksToPy = (function () {
 		},
 		func_call_3args: function (block, ctx) {
 			let funcName = asIdentifier(XML.getChildNode(block, "funcName").innerText);
+			if (!ctx.findFunctionNamed(funcName)) {
+				throw "No se encontró una función llamada '" + funcName + "'";
+			}
 			let args = ["arg0", "arg1", "arg2"];
 			ctx.builder.append(funcName).append("(");
 			args.forEach((arg, i) => {
