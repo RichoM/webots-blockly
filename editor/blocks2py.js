@@ -73,12 +73,16 @@ let BlocksToPy = (function () {
 
 		findProcedureNamed(name) {
 			let procBlocks = new Set(["proc_definition_0args", "proc_definition_1args", "proc_definition_2args", "proc_definition_3args"]);
-			return this.topLevelBlocks.filter(b => procBlocks.has(b.getAttribute("type"))).find(b => b.children["procName"].innerText == name);
+			return this.topLevelBlocks
+				.filter(b => procBlocks.has(b.getAttribute("type")))
+				.find(b => asIdentifier(b.children["procName"].innerText) == name);
 		}
 
 		findFunctionNamed(name) {
 			let procBlocks = new Set(["func_definition_0args", "func_definition_1args", "func_definition_2args", "func_definition_3args"])
-			return this.topLevelBlocks.filter(b => procBlocks.has(b.getAttribute("type"))).find(b => b.children["funcName"].innerText == name);
+			return this.topLevelBlocks
+				.filter(b => procBlocks.has(b.getAttribute("type")))
+				.find(b => asIdentifier(b.children["funcName"].innerText) == name);
 		}
 
 		registerError(block, msg) {
