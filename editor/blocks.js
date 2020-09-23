@@ -1,3 +1,4 @@
+var timestamps;
 let UziBlock = (function () {
 
   // HACK(Richo): trim polyfill
@@ -24,6 +25,7 @@ let UziBlock = (function () {
 
   let version = 1;
   let blocklyArea, blocklyDiv, workspace;
+  timestamps = new Map();
   let variables = [];
   let observers = {
     "change" : [],
@@ -84,6 +86,25 @@ let UziBlock = (function () {
 
       workspace.addChangeListener(function (evt) {
         if (evt.type == Blockly.Events.UI) return; // Ignore these events
+
+        /*
+        NOTE(Richo): Whenever a block is created or deleted we update the timestamps map.
+        These timestamps should help us disambiguate when two proc/func blocks with the same
+        name exist and we rename one. What should we do with the calling blocks?
+        If we always update the calling blocks then we get into surprising behavior.
+        For example, right after we duplicate an existing proc if we rename it then it will
+        update calling blocks that we didn't intended to change. Because they refer to the
+        original proc, not the new one! Using only the proc name to distinguish them makes
+        this impossible. So if we store the creation time of each block we can use it to
+        choose the older one, and avoid updating calling blocks when a younger block is
+        renamed. It's kind of complicated but I think it works...
+        */
+        if (evt.type == Blockly.Events.CREATE) {
+          let time = +new Date();
+          evt.ids.forEach(id => timestamps.set(id, time));
+        } else if (evt.type == Blockly.Events.DELETE) {
+          evt.ids.forEach(id => timestamps.delete(id));
+        }
 
         handleTaskBlocks(evt);
         handleProcedureBlocks(evt);
@@ -1712,13 +1733,23 @@ let UziBlock = (function () {
        && evt.name == "procName") {
       let block = workspace.getBlockById(evt.blockId);
       if (block != undefined && definitionBlocks.includes(block.type)) {
-        // A definition block has changed, we need to update all calling blocks
-        let callBlock = callBlocks[definitionBlocks.indexOf(block.type)];
-        workspace.getAllBlocks()
-          .filter(b => callBlock == b.type)
-          .map(b => b.getField("procName"))
-          .filter(f => f != undefined && f.getValue() == evt.oldValue)
-          .forEach(f => f.setValue(evt.newValue));
+        // A definition block has changed, we need to update calling blocks
+        // But only if the block is the oldest of its twins!
+        let twinBlocks = workspace.getTopBlocks()
+          .filter(b => b.type == block.type)
+          .filter(b => {
+            let field = b.getField("procName");
+            return field && field.getValue() == evt.oldValue;
+          });
+        let time = timestamps.get(block.id);
+        if (!twinBlocks.some(b => timestamps.get(b.id) < time)) {
+          let callBlock = callBlocks[definitionBlocks.indexOf(block.type)];
+          workspace.getAllBlocks()
+            .filter(b => callBlock == b.type)
+            .map(b => b.getField("procName"))
+            .filter(f => f != undefined && f.getValue() == evt.oldValue)
+            .forEach(f => f.setValue(evt.newValue));
+        }
       } else if (block != undefined && callBlocks.includes(block.type)) {
         // A calling block has changed, we need to update its argument names
         updateArgumentFields(block);
@@ -1756,13 +1787,23 @@ let UziBlock = (function () {
        && evt.name == "funcName") {
       let block = workspace.getBlockById(evt.blockId);
       if (block != undefined && definitionBlocks.includes(block.type)) {
-        // A definition block has changed, we need to update all calling blocks
-        let callBlock = callBlocks[definitionBlocks.indexOf(block.type)];
-        workspace.getAllBlocks()
-          .filter(b => callBlock == b.type)
-          .map(b => b.getField("funcName"))
-          .filter(f => f != undefined && f.getValue() == evt.oldValue)
-          .forEach(f => f.setValue(evt.newValue));
+        // A definition block has changed, we need to update calling blocks
+        // But only if the block is the oldest of its twins!
+        let twinBlocks = workspace.getTopBlocks()
+          .filter(b => b.type == block.type)
+          .filter(b => {
+            let field = b.getField("funcName");
+            return field && field.getValue() == evt.oldValue;
+          });
+        let time = timestamps.get(block.id);
+        if (!twinBlocks.some(b => timestamps.get(b.id) < time)) {
+          let callBlock = callBlocks[definitionBlocks.indexOf(block.type)];
+          workspace.getAllBlocks()
+            .filter(b => callBlock == b.type)
+            .map(b => b.getField("funcName"))
+            .filter(f => f != undefined && f.getValue() == evt.oldValue)
+            .forEach(f => f.setValue(evt.newValue));
+        }
       } else if (block != undefined && callBlocks.includes(block.type)) {
         // A calling block has changed, we need to update its argument names
         updateArgumentFields(block);
