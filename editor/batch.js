@@ -1,6 +1,7 @@
 const electron = require('electron');
 const { dialog } = electron ? electron.remote : {};
 const fs = require('fs');
+var path = require('path');
 
 class Output {
   constructor() {
@@ -147,7 +148,7 @@ function openFolder() {
     console.log(response);
     if (response.canceled) return;
     folder = response.filePaths[0];
-    fs.readdir(folder, (err, data) => {
+    walk(folder, (err, data) => {
       console.log(data);
       files = data.filter(f => f.endsWith(".blocks")).map(f => ({name: f, status: null}));
     });
@@ -175,7 +176,7 @@ function go() {
 
 
 function process(file) {
-  return fs.promises.readFile(folder + "/" + file.name)
+  return fs.promises.readFile(file.name)
     .then(contents => JSON.parse(contents))
     .then(generateCode)
     .then(code => writeCodeFile(file, code))
@@ -207,7 +208,7 @@ function generateCode(data) {
 }
 
 function writeCodeFile(file, src) {
-  let codePath = folder + "/" + (file.name.substr(0, file.name.lastIndexOf(".")) + ".py");
+  let codePath = file.name.substr(0, file.name.lastIndexOf(".")) + ".py";
   fs.promises.readFile(codePath)
     .then(contents => {
       if (src != contents) {
@@ -228,3 +229,28 @@ function writeCodeFile(file, src) {
       });
     })
 }
+
+
+var walk = function(dir, done) {
+  var results = [];
+  fs.readdir(dir, function(err, list) {
+    if (err) return done(err);
+    var i = 0;
+    (function next() {
+      var file = list[i++];
+      if (!file) return done(null, results);
+      file = path.resolve(dir, file);
+      fs.stat(file, function(err, stat) {
+        if (stat && stat.isDirectory()) {
+          walk(file, function(err, res) {
+            results = results.concat(res);
+            next();
+          });
+        } else {
+          results.push(file);
+          next();
+        }
+      });
+    })();
+  });
+};
