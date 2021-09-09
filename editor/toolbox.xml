@@ -16,6 +16,9 @@
       <field name="sonarName">sensorDistanciaI</field>
     </block>
     <block type="floor_getcolor"></block>
+    <block type="floor_getcolor_rgb">
+      <field name="channel">red</field>
+    </block>
     <block type="bumper_getvalue">
       <field name="bumperName">bumperI</field>
     </block>

@@ -255,6 +255,12 @@ let BlocksToPy = (function () {
 		floor_getcolor: function (block, ctx) {
 			ctx.builder.append("robot.getColorPiso()");
 		},
+		floor_getcolor_rgb: function (block, ctx) {
+			let channel = asIdentifier(XML.getChildNode(block, "channel").innerText);
+			let channels = ["red", "green", "blue"];
+			let index = channels.indexOf(channel);
+			ctx.builder.append("robot.getColorPisoRGB()[" + index + "]");
+		},
 		bumper_getvalue: function (block, ctx) {
 			let bumperName = asIdentifier(XML.getChildNode(block, "bumperName").innerText);
 			if (bumperName == "bumperI") {

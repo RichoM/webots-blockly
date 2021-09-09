@@ -976,8 +976,29 @@ let UziBlock = (function () {
 
     Blockly.Blocks['floor_getcolor'] = {
       init: function() {
-        let msg = i18n.translate("leer color del piso");
+        let msg = i18n.translate("leer brillo del piso");
         let inputFields = {};
+
+        initBlock(this, msg, inputFields);
+
+        //this.setInputsInline(false);
+        this.setOutput(true, "Number");
+        this.setColour(0);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+
+    Blockly.Blocks['floor_getcolor_rgb'] = {
+      init: function() {
+        let msg = i18n.translate("leer color %channel del piso");
+        let inputFields = {
+          "channel": input => input.setAlign(Blockly.ALIGN_RIGHT)
+              .appendField(new Blockly.FieldDropdown([[i18n.translate("rojo"), "red"],
+                                                      [i18n.translate("verde"), "green"],
+                                                      [i18n.translate("azul"), "blue"]]),
+                                                      "channel")
+        };
 
         initBlock(this, msg, inputFields);
 
