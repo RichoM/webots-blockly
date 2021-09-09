@@ -176,10 +176,13 @@ function go() {
 
 
 function process(file) {
+  let parts = file.name.split(/[\\.]/);
+  //let folderName = parts[parts.length - 3];
+  let robotName = parts[parts.length - 2];
   return fs.promises.readFile(file.name)
     .then(contents => JSON.parse(contents))
-    .then(generateCode)
-    .then(code => writeCodeFile(file, code))
+    .then(data => generateCode(robotName, data))
+    .then(code => writeCodeFile(file, robotName, code))
     .catch(err => {
       file.status = "ERROR";
       console.log("ERROR: " + file.name);
@@ -188,13 +191,8 @@ function process(file) {
     });
 }
 
-function generateCode(data) {
+function generateCode(robotName, data) {
   return new Promise((resolve, reject) => {
-    let robotName = data["robotName"];
-    if (!robotName) {
-      throw "The robot has no name!";
-    }
-
     UziBlock.setDataFromStorage(data);
     setTimeout(() => {
       try {
@@ -207,8 +205,8 @@ function generateCode(data) {
   });
 }
 
-function writeCodeFile(file, src) {
-  let codePath = file.name.substr(0, file.name.lastIndexOf(".")) + ".py";
+function writeCodeFile(file, robotName, src) {
+  let codePath = file.name.substr(0, file.name.lastIndexOf("\\")) + "\\" + robotName + ".py";
   fs.promises.readFile(codePath)
     .then(contents => {
       if (src != contents) {
